@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "chip8emu", "chip8emu\chip8emu.csproj", "{7A6C166F-9474-42EB-A4E9-A4E8788BFFF1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "chip8asm", "chip8asm\chip8asm.csproj", "{980CBC7A-3CE7-406D-A191-FA6E3C25F902}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "chip8asm", "chip8asm\chip8asm.csproj", "{FA900ECB-4886-4745-9C01-6DB58A0591A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{7A6C166F-9474-42EB-A4E9-A4E8788BFFF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A6C166F-9474-42EB-A4E9-A4E8788BFFF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A6C166F-9474-42EB-A4E9-A4E8788BFFF1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{980CBC7A-3CE7-406D-A191-FA6E3C25F902}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{980CBC7A-3CE7-406D-A191-FA6E3C25F902}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{980CBC7A-3CE7-406D-A191-FA6E3C25F902}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{980CBC7A-3CE7-406D-A191-FA6E3C25F902}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA900ECB-4886-4745-9C01-6DB58A0591A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA900ECB-4886-4745-9C01-6DB58A0591A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA900ECB-4886-4745-9C01-6DB58A0591A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA900ECB-4886-4745-9C01-6DB58A0591A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

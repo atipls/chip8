@@ -16,6 +16,7 @@ namespace chip8asm {
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new main());
         }
+
         public main() {
             InitializeComponent();
         }
