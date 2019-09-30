@@ -37,7 +37,7 @@ namespace chip8emu {
             SetStyle(ControlStyles.UserPaint, true);
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
 
-            chip8.load(main.path ?? "opcode_test2.bin");
+            chip8.load(chip8emu.main.path ?? "opcode_test2.bin");
             disasm = new disasm(chip8);
             disasm.Show();
         }
