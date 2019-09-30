@@ -107,19 +107,28 @@
         '\"',
         '\'',
         '\''};
+            this.tb_main.AutoIndentCharsPatterns = "^\\s*[\\w\\.]+(\\s\\w+)?\\s*(?<range>=)\\s*(?<range>[^;=]+);\r\n^\\s*(case|default)\\s*[^:]*" +
+    "(?<range>:)\\s*(?<range>[^;]+);";
             this.tb_main.AutoScrollMinSize = new System.Drawing.Size(291, 42);
             this.tb_main.BackBrush = null;
+            this.tb_main.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
             this.tb_main.CharHeight = 14;
             this.tb_main.CharWidth = 8;
+            this.tb_main.CurrentPenSize = 3;
             this.tb_main.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.tb_main.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.tb_main.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tb_main.DocumentPath = null;
+            this.tb_main.ForeColor = System.Drawing.SystemColors.Control;
             this.tb_main.IsReplaceMode = false;
+            this.tb_main.LineNumberColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(145)))), ((int)(((byte)(175)))));
             this.tb_main.Location = new System.Drawing.Point(0, 24);
             this.tb_main.Name = "tb_main";
             this.tb_main.Paddings = new System.Windows.Forms.Padding(0);
+            this.tb_main.SelectionChangedDelayedEnabled = false;
             this.tb_main.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
             this.tb_main.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("tb_main.ServiceColors")));
+            this.tb_main.ServiceLinesColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
             this.tb_main.Size = new System.Drawing.Size(800, 426);
             this.tb_main.TabIndex = 1;
             this.tb_main.Text = "# chip-8 assembler\r\n# basic directives are supported.\r\n";

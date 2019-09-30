@@ -217,7 +217,6 @@ namespace chip8emu {
             cpu.memory.write(File.ReadAllBytes(file), constants.rom_start);
         }
         public void update() {
-
             //for the disassembler
             if ((DateTime.Now - last).TotalSeconds > 1) {
                 ops = handled;

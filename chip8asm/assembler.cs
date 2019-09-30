@@ -22,7 +22,7 @@ namespace chip8asm {
                     while (!end && source[position] != '\n') {
                         position++;
                     }
-                    if (source[position] == '\n')
+                    if (!end && source[position] == '\n')
                         position++;
                 } else return;
             }
