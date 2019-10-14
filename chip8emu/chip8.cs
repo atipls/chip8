@@ -31,7 +31,7 @@ namespace chip8emu {
     }
     public class cpu {
         public bool[] keys = new bool[16];
-        public byte[] registers = new byte[16]; //V0-VF
+        public byte[] v = new byte[16]; //V0-VF
         public ushort ir = 0; //index register
         public ushort pc = 0; //program counter
         public byte sp = 0; //stack pointer
@@ -42,159 +42,142 @@ namespace chip8emu {
         public video video;
 
         Random random;
-        Dictionary<int, Action> handlers;
-        Dictionary<int, Action> handlers_8;
-        Dictionary<int, Action> handlers_f;
         public cpu() {
             memory = new memory();
             video = new video();
             random = new Random();
-            handlers = new Dictionary<int, Action>() {
-                { 0  , table_0 },
-                { 1  , op_1nnn },
-                { 2  , op_2nnn },
-                { 3  , op_3xkk },
-                { 4  , op_4xkk },
-                { 5  , op_5xy0 },
-                { 6  , op_6xkk },
-                { 7  , op_7xkk },
-                { 8  , table_8 },
-                { 9  , op_9xy0 },
-                { 0xA, op_annn },
-                { 0xB, op_bnnn },
-                { 0xC, op_cxnn },
-                { 0xD, op_dxyn },
-                { 0xE, table_e },
-                { 0xF, table_f },
-            };
-            handlers_8 = new Dictionary<int, Action>() {
-                { 0  , op_8xy0 },
-                { 1  , op_8xy1 },
-                { 2  , op_8xy2 },
-                { 3  , op_8xy3 },
-                { 4  , op_8xy4 },
-                { 5  , op_8xy5 },
-                { 6  , op_8xy6 },
-                { 7  , op_8xy7 },
-                { 0xE, op_8xye },
-            };
-            handlers_f = new Dictionary<int, Action>() {
-                { 7   , op_fx07 },
-                { 0xA , op_fx0a },
-                { 0x15, op_fx15 },
-                { 0x18, op_fx18 },
-                { 0x1E, op_fx1e },
-                { 0x29, op_fx29 },
-                { 0x33, op_fx33 },
-                { 0x55, op_fx55 },
-                { 0x65, op_fx65 },
-            };
         }
         public void update() {
             instr = memory.get16(pc);
             pc += 2;
-            handlers[(byte)((instr & 0xF000) >> 12)]();
+
+            ushort nnn = (ushort)(instr & 0x0FFF);
+            ushort x = (ushort)((instr & 0x0F00) >> 8);
+            ushort y = (ushort)((instr & 0x00F0) >> 4);
+            byte nn = (byte)(instr & 0x00FF);
+
+            switch ((instr & 0xF000) >> 12) {
+                case 0x0: {
+                    switch (instr & 0x000F) {
+                        case 0x0000: Array.Clear(video.raw, 0, video.raw.Length); break; //clear screen
+                        case 0x000E: pc = memory.stack[--sp]; break; //return from subroutine
+                    }
+                    goto default;
+                }
+                case 0x1: pc = nnn; break; //jump
+                case 0x2: memory.stack[sp++] = pc; pc = nnn; break; //call
+                case 0x3: if (v[x] == nn) pc += 2; break; //skip next instruction if equal to byte
+                case 0x4: if (v[x] != nn) pc += 2; break; //skip next instruction if not equal to byte
+                case 0x5: if (v[x] == v[y]) pc += 2; break; //skip next instruction if equal to register
+                case 0x6: v[x] = nn; break; //set register to value
+                case 0x7: v[x] += nn; break; //add value to register
+                case 0x8: {
+                    switch (instr & 0x000F) {
+                        case 0: v[x] = v[y]; break; //set vx to vy      
+                        case 1: v[x] |= v[y]; break; //or vx with vy
+                        case 2: v[x] &= v[y]; break; //and vx with vy
+                        case 3: v[x] ^= v[y]; break; //xor vx with vy
+                        case 4: { //add vx to vy
+                            v[0xF] = (byte)(v[x] + v[y] > 255 ? 1 : 0);
+                            v[x] = (byte)(v[x] + v[y] & 0xFF);
+                            break;
+                        }
+                        case 5: { //subtract vx from vy
+                            v[0xF] = (byte)(v[x] > v[y] ? 1 : 0);
+                            v[x] -= v[y];
+                            break;
+                        }
+                        case 6: { //shift and set vx to lsb
+                            v[0xF] = (byte)(v[x] & 1);
+                            v[x] >>= 1;
+                            break;
+                        }
+                        case 7: { //set vx to vy-vx
+                            v[0xF] = (byte)(v[y] > v[x] ? 1 : 0);
+                            v[x] = (byte)(v[y] - v[x]);
+                            break;
+                        }
+                        case 0xE: { //shift and set vx to msb
+                            v[0xF] = (byte)((v[x] & 0x80) >> 7);
+                            v[x] <<= 1;
+                            break;
+                        }
+                    }
+                    goto default;
+                }
+                case 0x9: if (v[x] != v[y]) pc += 2; break; //skip next instruction if not equal to register
+                case 0xA: ir = nnn; break; //set ir to value
+                case 0xB: pc = (ushort)(v[0] + nnn); break; //jump to v0 + value
+                case 0xC: v[x] = (byte)(random.Next(0, 255) & nn); break; //set register to RAND&NN
+                case 0xD: { //draw at vx, vy, height n
+                    v[0xF] = 0;
+                    for (int row = 0; row < (instr & 0x000F); row++) {
+                        byte sprite = memory.raw[ir + row];
+                        for (int col = 0; col < 8; col++) {
+                            byte pixel = (byte)(sprite & (0x80 >> col));
+                            byte dx = (byte)((v[x] + col) % constants.x_size);
+                            byte dy = (byte)((v[y] + row) % constants.y_size);
+                            if (pixel != 0) {
+                                if (video.raw[dx, dy])
+                                    v[0xF] = 1;
+                                video.raw[dx, dy] ^= true;
+                                video.draw = true;
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 0xE: {
+                    switch (instr & 0x000F) {
+                        case 0x0001: if (!keys[v[x]]) pc += 2; break; //skip next instruction if key vx is not pressed
+                        case 0x000E: if (keys[v[x]]) pc += 2; break; //skip next instruction if key vx is pressed
+                    }
+                    goto default;
+                }
+                case 0xF: {
+                    switch (instr & 0x00FF) {
+                        case 7: v[x] = delay_timer; break; //set vx to delay timer
+                        case 0xA: { //wait for key and place it to vx (blocking)
+                            for (int i = 0; i < 16; i++) {
+                                if (keys[i]) {
+                                    v[x] = (byte)i;
+                                    return;
+                                }
+                            }
+                            pc -= 2;
+                            break;
+                        }
+                        case 0x15: delay_timer = v[x]; break; //set delay timer to vx
+                        case 0x18: sound_timer = v[x]; break; //set sound timer to vx
+                        case 0x1E: ir += v[x]; break; //add vx to ir
+                        case 0x29: ir = (ushort)(5 * v[x]); break; //load sprite to i from vx
+                        case 0x33: { //store bcd of vx in i
+                            byte val = v[x];
+                            memory.raw[ir + 2] = (byte)(val % 10); val /= 10;
+                            memory.raw[ir + 1] = (byte)(val % 10); val /= 10;
+                            memory.raw[ir] = (byte)(val % 10);
+                            break;
+                        }
+                        case 0x55: { //set V0-vx to I
+                            for (int i = 0; i <= x; i++)
+                                memory.raw[ir + i] = v[i];
+                            break;
+                        }
+                        case 0x65: { //set V0-vx from I
+                            for (int i = 0; i <= x; i++)
+                                v[i] = memory.raw[ir + i];
+                            break;
+                        }
+                    }
+                    Debug.WriteLine($"SYSCALL {instr & 0x0FFF:X4} not implemented!");
+                    break;
+                }
+                default: Debug.WriteLine($"Unknown instruction: {instr:X4}"); break;
+            }
             if (delay_timer > 0)
                 delay_timer--;
             if (sound_timer > 0)
                 sound_timer--;
-        }
-        void table_0() {
-            switch (instr & 0x000F) {
-                case 0x0000: op_00e0(); return;
-                case 0x000E: op_00ee(); return;
-                default: Debug.WriteLine("Unknown instruction!"); return;
-            }
-        }
-        void table_e() {
-            switch (instr & 0x000F) {
-                case 0x0001: op_exa1(); return;
-                case 0x000E: op_ex9e(); return;
-                default: Debug.WriteLine("Unknown instruction!"); return;
-            }
-        }
-        void table_8() { handlers_8[instr & 0x000F](); }
-        void table_f() { if (handlers_f.ContainsKey(instr & 0x00FF)) handlers_f[instr & 0x00FF](); else Debug.WriteLine("SYS not implemented!"); }
-        void op_1nnn() { pc = (ushort)(instr & 0x0FFF); } //jump
-        void op_2nnn() { memory.stack[sp++] = pc; pc = (ushort)(instr & 0xFFF); } //call
-        void op_3xkk() { if (registers[(instr & 0x0F00) >> 8] == (byte)(instr & 0x00FF)) pc += 2; } //skip next instruction if equal to byte
-        void op_4xkk() { if (registers[(instr & 0x0F00) >> 8] != (byte)(instr & 0x00FF)) pc += 2; } //skip next instruction if not equal to byte
-        void op_5xy0() { if (registers[(instr & 0x0F00) >> 8] == registers[(instr & 0x00F0) >> 4]) pc += 2; } //skip next instruction if equal to register
-        void op_6xkk() { registers[(instr & 0x0F00) >> 8] = (byte)(instr & 0x00FF); } //set register to value
-        void op_7xkk() { registers[(instr & 0x0F00) >> 8] += (byte)(instr & 0x00FF); } //add value to register
-        void op_9xy0() { if (registers[(instr & 0x0F00) >> 8] != registers[(instr & 0x00F0) >> 4]) pc += 2; } //skip next instruction if not equal to register
-        void op_annn() { ir = (ushort)(instr & 0x0FFF); }
-        void op_bnnn() { pc = (ushort)(registers[0] + (ushort)(instr & 0x0FFF)); } //jump to v0 + value
-        void op_cxnn() { registers[(instr & 0x0F00) >> 8] = (byte)(random.Next(0, 255) & (byte)(instr & 0x00FF)); }
-        void op_00e0() { Array.Clear(video.raw, 0, video.raw.Length); }
-        void op_00ee() { pc = memory.stack[--sp]; } //return
-        void op_exa1() { if (!keys[registers[(instr & 0x0F00) >> 8]]) pc += 2; } //skip next instruction if key Vx is not pressed
-        void op_ex9e() { if (keys[registers[(instr & 0x0F00) >> 8]]) pc += 2; } //skip next instruction if key Vx is pressed
-        void op_8xy0() { registers[(instr & 0x0F00) >> 8] = registers[(instr & 0x00F0) >> 4]; } //set Vx to Vy
-        void op_8xy1() { registers[(instr & 0x0F00) >> 8] |= registers[(instr & 0x00F0) >> 4]; } //or Vx with Vy
-        void op_8xy2() { registers[(instr & 0x0F00) >> 8] &= registers[(instr & 0x00F0) >> 4]; } //and Vx with Vy
-        void op_8xy3() { registers[(instr & 0x0F00) >> 8] ^= registers[(instr & 0x00F0) >> 4]; } //xor Vx with Vy
-        void op_8xy4() { //add with carry
-            ushort val = (ushort)(registers[(instr & 0x0F00) >> 8] + registers[(instr & 0x00F0) >> 4]);
-            if (val > 255)
-                registers[0xF] = 1;
-            else registers[0xF] = 0;
-            registers[(instr & 0x0F00) >> 8] = (byte)(val & 0xFF);
-        }
-        void op_8xy5() { //subtract with borrow
-            if (registers[(instr & 0x0F00) >> 8] > registers[(instr & 0x00F0) >> 4])
-                registers[0xF] = 1;
-            else registers[0xF] = 0;
-            registers[(instr & 0x0F00) >> 8] -= registers[(instr & 0x00F0) >> 4];
-        }
-        void op_8xy6() { registers[0xF] = (byte)(registers[(instr & 0x0F00) >> 8] & 1); registers[(instr & 0x0F00) >> 8] >>= 1; } //shift and set Vx to lsb
-        void op_8xy7() { //subtract with not borrow
-            if (registers[(instr & 0x00F0) >> 4] > registers[(instr & 0x0F00) >> 8])
-                registers[0xF] = 1;
-            else registers[0xF] = 0;
-            registers[(instr & 0x0F00) >> 8] = (byte)(registers[(instr & 0x00F0) >> 4] - registers[(instr & 0x0F00) >> 8]);
-        }
-        void op_8xye() { registers[0xF] = (byte)((registers[(instr & 0x0F00) >> 8] & 0x80) >> 7); registers[(instr & 0x0F00) >> 8] <<= 1; } //shift and set Vx to msb
-        void op_fx07() { registers[(instr & 0x0F00) >> 8] = delay_timer; } //load delay timer to Vx
-        void op_fx0a() { //wait for key, then set the key idx to Vx
-            for (int i = 0; i < 16; i++) {
-                if (keys[i]) {
-                    registers[(instr & 0x0F00) >> 8] = (byte)i;
-                    return;
-                }
-            }
-            pc -= 2;
-        }
-        void op_fx15() { delay_timer = registers[(instr & 0x0F00) >> 8]; } //set delay timer to Vx 
-        void op_fx18() { sound_timer = registers[(instr & 0x0F00) >> 8]; } //set sound timer to Vx
-        void op_fx1e() { ir += registers[(instr & 0x0F00) >> 8]; } //add Vx to ir
-        void op_fx29() { ir = (ushort)(5 * registers[(instr & 0x0F00) >> 8]); }
-        void op_fx33() { //set bcd to ir,ir+1,ir+2
-            byte val = registers[(instr & 0x0F00) >> 8];
-            memory.raw[ir + 2] = (byte)(val % 10); val /= 10;
-            memory.raw[ir + 1] = (byte)(val % 10); val /= 10;
-            memory.raw[ir] = (byte)(val % 10);
-        }
-        void op_fx55() { for (int i = 0; i <= (instr & 0x0F00) >> 8; i++) memory.raw[ir + i] = registers[i]; } //set V0-Vx to I
-        void op_fx65() { for (int i = 0; i <= (instr & 0x0F00) >> 8; i++) registers[i] = memory.raw[ir + i]; } //set V0-Vx from I
-        void op_dxyn() { //draw
-            byte x = registers[(instr & 0x0F00) >> 8];
-            byte y = registers[(instr & 0x00F0) >> 4];
-            registers[0xF] = 0;
-            for (int row = 0; row < (instr & 0x000F); row++) {
-                byte sprite = memory.raw[ir + row];
-                for (int col = 0; col < 8; col++) {
-                    byte pixel = (byte)(sprite & (0x80 >> col));
-                    byte dx = (byte)((x + col) % constants.x_size);
-                    byte dy = (byte)((y + row) % constants.y_size);
-                    if (pixel != 0) {
-                        if (video.raw[dx, dy])
-                            registers[0xF] = 1;
-                        video.raw[dx, dy] ^= true;
-                        video.draw = true;
-                    }
-                }
-            }
         }
     }
     public class chip8 {
