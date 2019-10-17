@@ -61,8 +61,9 @@ namespace chip8emu {
                     switch (instr & 0x000F) {
                         case 0x0000: Array.Clear(video.raw, 0, video.raw.Length); break; //clear screen
                         case 0x000E: pc = memory.stack[--sp]; break; //return from subroutine
+                        default: goto unresolved;
                     }
-                    goto default;
+                    break;
                 }
                 case 0x1: pc = nnn; break; //jump
                 case 0x2: memory.stack[sp++] = pc; pc = nnn; break; //call
@@ -102,8 +103,9 @@ namespace chip8emu {
                             v[x] <<= 1;
                             break;
                         }
+                        default: goto unresolved;
                     }
-                    goto default;
+                    break;
                 }
                 case 0x9: if (v[x] != v[y]) pc += 2; break; //skip next instruction if not equal to register
                 case 0xA: ir = nnn; break; //set ir to value
@@ -131,8 +133,9 @@ namespace chip8emu {
                     switch (instr & 0x000F) {
                         case 0x0001: if (!keys[v[x]]) pc += 2; break; //skip next instruction if key vx is not pressed
                         case 0x000E: if (keys[v[x]]) pc += 2; break; //skip next instruction if key vx is pressed
+                        default: goto unresolved;
                     }
-                    goto default;
+                    break;
                 }
                 case 0xF: {
                     switch (instr & 0x00FF) {
@@ -172,7 +175,9 @@ namespace chip8emu {
                     Debug.WriteLine($"SYSCALL {instr & 0x0FFF:X4} not implemented!");
                     break;
                 }
-                default: Debug.WriteLine($"Unknown instruction: {instr:X4}"); break;
+                default:
+unresolved:
+                    Debug.WriteLine($"Unknown instruction: {instr:X4}"); break;
             }
             if (delay_timer > 0)
                 delay_timer--;

@@ -48,7 +48,7 @@ RAW $EAAC
 SET IR, $0AEA
 RND VD, $00AA
 JSR $0020
-DRW V9, VB, 4";
+DRW V9, VB, $4";
         }
         protected override void Dispose(bool disposing) {
             if (disposing) {
