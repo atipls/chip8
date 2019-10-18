@@ -84,7 +84,7 @@ namespace chip8emu {
         public void update() {
             Label[] lbregs = { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, va, vb, vc, vd, ve, vf };
 
-            Text = $"chip8 disasm.";
+            Text = $"chip8 disassembler";
             pc.Text = $"PC: {chip.cpu.pc:X}";
             sp.Text = $"SP: {chip.cpu.sp:X}";
             ir.Text = $"IR: {chip.cpu.ir:X}";
@@ -94,7 +94,7 @@ namespace chip8emu {
 
             lb_exec.Text = $"Executing: \n{printer.run(chip.cpu.memory.get16(chip.cpu.pc))}";
 
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < 16; i++)
                 lbregs[i].Text = $"V{i:X}: {chip.cpu.v[i]}";
 
             stack.Text = "Stack: \n";
