@@ -57,7 +57,7 @@ namespace chip8emu {
                         }
                         goto default;
                     case 0xF:
-                        switch (nn) {
+                        switch (instr & 0x00FF) {
                             case 7: return $"LDT V{x:X}"; //set vx to delay timer
                             case 0xA: return $"WKY V{x:X}"; //wait for key and place it to vx (blocking)
                             case 0x15: return $"SDT V{x:X}"; //set delay timer to vx
@@ -102,8 +102,9 @@ namespace chip8emu {
                 for (int i = 0; i < chip.cpu.sp; i++)
                     stack.Text += $"{chip.cpu.memory.stack[i]:X4}\n";
             } else stack.Text += "Empty.";
-
-            tb_hex.Text = BitConverter.ToString(chip.cpu.memory.raw).Replace('-', ' ');
+            if (!hb_mem.IsDisposed)
+                hb_mem.ByteProvider = new Be.Windows.Forms.DynamicByteProvider(chip.cpu.memory.raw);
+            //tb_hex.Text = BitConverter.ToString(chip.cpu.memory.raw).Replace('-', ' ');
             ops.Text = $"Operations Per Second: {chip.ops}";
         }
     }

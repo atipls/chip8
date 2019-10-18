@@ -27,6 +27,7 @@
             this.ch_hex = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ch_opcode = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.gb_main = new System.Windows.Forms.GroupBox();
+            this.lb_exec = new System.Windows.Forms.Label();
             this.ops = new System.Windows.Forms.Label();
             this.dt = new System.Windows.Forms.Label();
             this.st = new System.Windows.Forms.Label();
@@ -50,8 +51,7 @@
             this.ir = new System.Windows.Forms.Label();
             this.sp = new System.Windows.Forms.Label();
             this.pc = new System.Windows.Forms.Label();
-            this.tb_hex = new System.Windows.Forms.TextBox();
-            this.lb_exec = new System.Windows.Forms.Label();
+            this.hb_mem = new Be.Windows.Forms.HexBox();
             this.gb_main.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -116,6 +116,15 @@
             this.gb_main.TabIndex = 1;
             this.gb_main.TabStop = false;
             this.gb_main.Text = "cpu info";
+            // 
+            // lb_exec
+            // 
+            this.lb_exec.AutoSize = true;
+            this.lb_exec.Location = new System.Drawing.Point(67, 168);
+            this.lb_exec.Name = "lb_exec";
+            this.lb_exec.Size = new System.Drawing.Size(57, 13);
+            this.lb_exec.TabIndex = 23;
+            this.lb_exec.Text = "Executing:";
             // 
             // ops
             // 
@@ -324,31 +333,24 @@
             this.pc.TabIndex = 0;
             this.pc.Text = "PC: ";
             // 
-            // tb_hex
+            // hb_mem
             // 
-            this.tb_hex.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.tb_hex.Location = new System.Drawing.Point(0, 230);
-            this.tb_hex.Multiline = true;
-            this.tb_hex.Name = "tb_hex";
-            this.tb_hex.ReadOnly = true;
-            this.tb_hex.Size = new System.Drawing.Size(409, 107);
-            this.tb_hex.TabIndex = 19;
-            // 
-            // lb_exec
-            // 
-            this.lb_exec.AutoSize = true;
-            this.lb_exec.Location = new System.Drawing.Point(67, 168);
-            this.lb_exec.Name = "lb_exec";
-            this.lb_exec.Size = new System.Drawing.Size(57, 13);
-            this.lb_exec.TabIndex = 23;
-            this.lb_exec.Text = "Executing:";
+            this.hb_mem.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.hb_mem.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.hb_mem.Location = new System.Drawing.Point(0, 230);
+            this.hb_mem.Name = "hb_mem";
+            this.hb_mem.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))), ((int)(((byte)(188)))), ((int)(((byte)(255)))));
+            this.hb_mem.Size = new System.Drawing.Size(409, 107);
+            this.hb_mem.TabIndex = 20;
             // 
             // disasm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(590, 337);
-            this.Controls.Add(this.tb_hex);
+            this.Controls.Add(this.hb_mem);
             this.Controls.Add(this.gb_main);
             this.Controls.Add(this.lv_instructions);
             this.Name = "disasm";
@@ -356,7 +358,6 @@
             this.gb_main.ResumeLayout(false);
             this.gb_main.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -384,11 +385,11 @@
         private System.Windows.Forms.Label vd;
         private System.Windows.Forms.Label vc;
         private System.Windows.Forms.Label vf;
-        private System.Windows.Forms.TextBox tb_hex;
         private System.Windows.Forms.Label stack;
         private System.Windows.Forms.Label dt;
         private System.Windows.Forms.Label st;
         private System.Windows.Forms.Label ops;
         private System.Windows.Forms.Label lb_exec;
+        private Be.Windows.Forms.HexBox hb_mem;
     }
 }
