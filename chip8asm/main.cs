@@ -72,7 +72,7 @@ DRW V9, VB, $4";
             e.ChangedRange.SetStyle(opcode_style, $@"\b({string.Join("|", opcodes)})\b", RegexOptions.IgnoreCase);
             e.ChangedRange.SetStyle(register_style, $@"\bV[A-z]\b|\bV[0-9]\b|\bIR\b|\bBCD\b", RegexOptions.IgnoreCase);
             e.ChangedRange.SetStyle(number_style, @"\d+|\$[0-9a-fA-F]+");
-            new assembler(tb_main.Text);
+            new assembler().assemble(tb_main.Text);
         }
     }
 }

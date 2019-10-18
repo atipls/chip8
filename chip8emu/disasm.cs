@@ -65,8 +65,8 @@ namespace chip8emu {
                             case 0x1E: return $"ADD IR, V{x:X}"; //add vx to ir
                             case 0x29: return $"LSP V{x:X}"; //load sprite to i from vx
                             case 0x33: return $"BCD V{x:X}"; //store bcd of vx in ir
-                            case 0x55: return $"STO V0-V{x:X}, IR"; //set V0-vx to ir
-                            case 0x65: return $"STO IR, V0-V{x:X}"; //set V0-vx from ir
+                            case 0x55: return $"STO V{x:X}, IR"; //set V0-vx to ir
+                            case 0x65: return $"STO IR, V{x:X}"; //set V0-vx from ir
                         }
                         return $"SYS ${instr & 0x0FFF:X4}";
                     default: return $"RAW ${instr:X4}";
