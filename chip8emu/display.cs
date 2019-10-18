@@ -41,9 +41,17 @@ namespace chip8emu {
             disasm = new disasm(chip8);
             disasm.Show();
         }
+        protected override void Dispose(bool disposing) {
+            if (disposing) {
+                if (components != null)
+                    components.Dispose();
+                if (disasm != null)
+                    disasm.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
         protected override void OnFormClosing(FormClosingEventArgs e) {
-            disasm.Close();
-            disasm.Dispose();
             Process.GetCurrentProcess().Kill(); //yeah not the most elegant way to end a program is it
             base.OnFormClosing(e);
         }
