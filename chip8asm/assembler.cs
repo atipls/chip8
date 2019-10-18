@@ -106,6 +106,7 @@ namespace chip8asm {
                     case SET: {
                         ushort instr = 0x0000; //ANNN / 6XNN / 8XY0 depending on instructions
                         var reg1 = register();
+                        expect(CHR, ",");
                         if (reg1 == -1)
                             instr |= (ushort)(0xA000 | literal(0xFFFF)); //ANNN
                         else {
@@ -129,6 +130,7 @@ namespace chip8asm {
                     case ADD: {
                         ushort instr = 0x0000; //FX1E / 7XNN / 8XY4 depending on instructions
                         var reg1 = register();
+                        expect(CHR, ",");
                         if (reg1 == -1)
                             instr |= (ushort)(0xF01E | (register() << 8)); //FX1E
                         else {
@@ -167,8 +169,7 @@ namespace chip8asm {
                     case RAW: { //CUSTOM
                         var num = expect(NUM);
                         if (num != null) {
-                            var blocks = num.value.Length / 2;
-                            for (int i = 0; i < blocks; i += 2)
+                            for (int i = 0; i < num.value.Length; i += 2)
                                 emit(byte.Parse(num.value.Substring(i, 2), NumberStyles.HexNumber));
                             if (num.value.Length % 2 == 1)
                                 emit(byte.Parse(num.value.Substring(num.value.Length - 1, 1), NumberStyles.HexNumber));
