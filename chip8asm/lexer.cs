@@ -63,7 +63,7 @@ namespace chip8asm {
             string lbl = "";
             while (!end && char.IsLetterOrDigit(source[pos]))
                 lbl += source[pos++];
-            tokens.Add(new token(NUM, lbl));
+            tokens.Add(new token(LBL, lbl));
         }
         private static void instructions() {
             if (end) return;
@@ -86,9 +86,9 @@ namespace chip8asm {
 
                 char chr = source[pos++];
                 switch (chr) {
-                    case '-': case ',': tokens.Add(new token(CHR, $"{chr}")); break; //we could have it as a token, lets just ignore it for now
+                    case '-': case ':': case ',': tokens.Add(new token(CHR, $"{chr}")); break;
                     case '$': number(); break;
-                    case '.': label(); break;
+                    case '<': label(); break;
                     case ' ': break;
                     default:
                         Debug.WriteLine($"unhandled character '{chr}'");

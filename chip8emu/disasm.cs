@@ -27,11 +27,11 @@ namespace chip8emu {
                         goto default;
                     case 1: return $"JMP ${nnn:X4}"; //jump
                     case 2: return $"JSR ${nnn:X4}"; //call
-                    case 3: return $"SEQ V{x:X}, ${nn:X4}"; ; //skip next instruction if equal to byte
-                    case 4: return $"SNE V{x:X}, ${nn:X4}"; ; //skip next instruction if not equal to byte
+                    case 3: return $"SEQ V{x:X}, ${nn:X2}"; ; //skip next instruction if equal to byte
+                    case 4: return $"SNE V{x:X}, ${nn:X2}"; ; //skip next instruction if not equal to byte
                     case 5: return $"SEQ V{x:X}, V{y:X}"; //skip next instruction if equal to register
-                    case 6: return $"SET V{x:X}, ${nn:X4}"; //set register to value
-                    case 7: return $"ADD V{x:X}, ${nn:X4}"; //add value to register
+                    case 6: return $"SET V{x:X}, ${nn:X2}"; //set register to value
+                    case 7: return $"ADD V{x:X}, ${nn:X2}"; //add value to register
                     case 8:
                         switch (instr & 0x000F) {
                             case 0: return $"SET V{x:X}, V{y:X}"; //set vx to vy
@@ -48,8 +48,8 @@ namespace chip8emu {
                     case 9: return $"JNE V{x:X}, V{y:X}";  //skip next instruction if not equal to register
                     case 0xA: return $"SET IR, ${nnn:X4}"; //set ir to value
                     case 0xB: return $"JRE ${nnn:X4}"; //jump to v0 + value
-                    case 0xC: return $"RND V{x:X}, ${nn:X4}"; //set register to RAND&NN
-                    case 0xD: return $"DRW V{x:X}, V{y:X}, {instr & 0x000F}"; //draw at vx, vy, height n
+                    case 0xC: return $"RND V{x:X}, ${nn:X2}"; //set register to RAND&NN
+                    case 0xD: return $"DRW V{x:X}, V{y:X}, ${instr & 0x000F:X2}"; //draw at vx, vy, height n
                     case 0xE:
                         switch (instr & 0x000F) {
                             case 0x0001: return $"SKN V{x:X}"; //skip next instruction if key vx is not pressed
@@ -68,8 +68,8 @@ namespace chip8emu {
                             case 0x55: return $"STO V{x:X}, IR"; //set V0-vx to ir
                             case 0x65: return $"STO IR, V{x:X}"; //set V0-vx from ir
                         }
-                        return $"SYS ${instr & 0x0FFF:X4}";
-                    default: return $"RAW ${instr:X4}";
+                        return $"SYS ${instr & 0x0FFF:X2}";
+                    default: return $"RAW ${instr:X2}";
                 }
             }
         }
@@ -100,7 +100,7 @@ namespace chip8emu {
             stack.Text = "Stack: \n";
             if (chip.cpu.sp != 0) {
                 for (int i = 0; i < chip.cpu.sp; i++)
-                    stack.Text += $"{chip.cpu.memory.stack[i]:X4}\n";
+                    stack.Text += $"{chip.cpu.memory.stack[i]:X2}\n";
             } else stack.Text += "Empty.";
             if (!hb_mem.IsDisposed)
                 hb_mem.ByteProvider = new Be.Windows.Forms.DynamicByteProvider(chip.cpu.memory.raw);

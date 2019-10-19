@@ -91,8 +91,9 @@
             // itm_compile
             // 
             this.itm_compile.Name = "itm_compile";
-            this.itm_compile.Size = new System.Drawing.Size(117, 22);
+            this.itm_compile.Size = new System.Drawing.Size(180, 22);
             this.itm_compile.Text = "compile";
+            this.itm_compile.Click += new System.EventHandler(this.itm_compile_click);
             // 
             // tb_main
             // 
@@ -119,6 +120,7 @@
             this.tb_main.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.tb_main.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tb_main.DocumentPath = null;
+            this.tb_main.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.tb_main.ForeColor = System.Drawing.SystemColors.Control;
             this.tb_main.IsReplaceMode = false;
             this.tb_main.LineNumberColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(145)))), ((int)(((byte)(175)))));

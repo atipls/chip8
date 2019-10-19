@@ -9,12 +9,19 @@ using System.Globalization;
 using static chip8asm.token.tt;
 namespace chip8asm {
     class assembler {
-        private List<byte> buffer = new List<byte>();
         public byte[] output => buffer.ToArray();
+        public List<token> tokens { get; private set; } = new List<token>();
+        public bool successful => !error;
+        public string error_str { get; private set; } = "";
+
+        private List<byte> buffer = new List<byte>();
         private int pos;
         private bool end => pos >= tokens.Count;
+        private ushort cur_address => (ushort)(0x200 /*chip8 constant*/ + buffer.Count);
         private bool error = false;
-        public List<token> tokens { get; private set; } = new List<token>();
+
+        private Dictionary<string, int> unresolved_labels = new Dictionary<string, int>();
+        private Dictionary<string, ushort> resolved_labels = new Dictionary<string, ushort>();
 
         private void emit(ushort raw) => emit((byte)((raw & 0xFF00) >> 8), (byte)(raw & 0x00FF));
         private void emit(params byte[] raw) => buffer.AddRange(raw);
@@ -35,9 +42,15 @@ namespace chip8asm {
             if (!end && cur.type == type) {
                 if (value == null)
                     return tokens[pos++];
-                if (cur.value == value)
+                if (cur.value == value) {
                     return tokens[pos++];
+                } else {
+                    error_str = $"expected '{value}', got '{cur.value}' instead.";
+                    error = true;
+                    return null;
+                }
             }
+            error_str = $"expected type '{type}', got '{cur.type}' instead.";
             error = true;
             return null;
         }
@@ -50,17 +63,66 @@ namespace chip8asm {
                     return byte.Parse(reg.value.Substring(1, 1), NumberStyles.HexNumber);
                 return -1;
             }
-
+            error_str = $"expected type '{REG}', got '{cur.type}' instead.";
             error = true;
+            return 0;
+        }
+        private void try_resolve_labels() {
+            foreach (var label in resolved_labels) {
+                if (unresolved_labels.ContainsKey(label.Key)) {
+                    var patchpos = unresolved_labels[label.Key];
+                    var address = resolved_labels[label.Key];
+                    ushort instr = (ushort)((buffer[patchpos] << 8) | buffer[patchpos + 1]);
+                    instr |= address;
+                    buffer[patchpos] = (byte)((instr & 0xFF00) >> 8);
+                    buffer[patchpos + 1] = (byte)(instr & 0x00FF);
+                    unresolved_labels.Remove(label.Key);
+                }
+            }
+        }
+        private ushort address() {
+            switch (cur.type) {
+                case NUM:
+                    int val;
+                    if (int.TryParse(cur.value, NumberStyles.HexNumber, null, out val) && val < 0xFFF) {
+                        pos++;
+                        return (ushort)val;
+                    }
+                    if (val > 0xFFF) {
+                        pos++;
+                        error_str = $"too big literal '{val:X}' for a valid address.";
+                        error = true;
+                    }
+                    break;
+                case LBL:
+                    if (resolved_labels.ContainsKey(cur.value)) {
+                        var addr = resolved_labels[cur.value];
+                        pos++;
+                        return addr;
+                    } else {
+                        unresolved_labels.Add(cur.value, buffer.Count);
+                        pos++;
+                        return 0; //placeholder
+                    }
+                default:
+                    error_str = $"unknown token {cur.type}";
+                    error = true;
+                    break;
+            }
             return 0;
         }
         private int literal(int max) {
             var num = expect(NUM);
-            if (num != null && int.TryParse(num.value, NumberStyles.HexNumber, null, out int val)
-                && val < max)
-                return val;
-            error = true;
-            return 0;
+            if (num != null) {
+                if (int.TryParse(num.value, NumberStyles.HexNumber, null, out int val) && val < max)
+                    return val;
+                else {
+                    error_str = $"'{val:X}' too big literal, expected max '{max:X}'";
+                    error = true;
+                    return 0;
+                }
+            }
+            return 0; //if num is null we have already set the error in 'expect'
         }
         public void assemble(string source) {
             lexer.run(source);
@@ -68,9 +130,10 @@ namespace chip8asm {
             // address = 0x200;
             while (!end && !error) {
                 var token = tokens[pos++];
+                Debug.WriteLine($"{pos - 1}: {token}");
                 switch (token.type) {
-                    case JMP: emit((ushort)(0x1000 | literal(0xFFF))); break; //1NNN
-                    case JSR: emit((ushort)(0x2000 | literal(0xFFF))); break; //2NNN
+                    case JMP: emit((ushort)(0x1000 | address())); break; //1NNN
+                    case JSR: emit((ushort)(0x2000 | address())); break; //2NNN
                     case SEQ: { //3XNN or 5XY0, depending if its a literal or a register
                         ushort instr = 0x0000;
                         instr |= (ushort)(register() << 8);
@@ -90,7 +153,7 @@ namespace chip8asm {
                         break;
                     }
                     case JNE: emit_xy(0x9000); break; //9XY0
-                    case JRE: emit((ushort)(0xB000 | literal(0xFFF))); break; //BNNN
+                    case JRE: emit((ushort)(0xB000 | address())); break; //BNNN
                     case RND: { //CXNN
                         ushort instr = 0xC000;
                         instr |= (ushort)(register() << 8);
@@ -108,7 +171,7 @@ namespace chip8asm {
                         var reg1 = register();
                         expect(CHR, ",");
                         if (reg1 == -1)
-                            instr |= (ushort)(0xA000 | literal(0xFFFF)); //ANNN
+                            instr |= (ushort)(0xA000 | address()); //ANNN
                         else {
                             if (cur.type == NUM) //6XNN
                                 instr |= (ushort)(0x6000 | (reg1 << 8) | literal(0xFF));
@@ -173,14 +236,28 @@ namespace chip8asm {
                                 emit(byte.Parse(num.value.Substring(i, 2), NumberStyles.HexNumber));
                             if (num.value.Length % 2 == 1)
                                 emit(byte.Parse(num.value.Substring(num.value.Length - 1, 1), NumberStyles.HexNumber));
-                        } else error = true;
+                        } else {
+                            error_str = "expected raw data after 'RAW' pseudo-opcode";
+                            error = true;
+                            break;
+                        }
+                        break;
+                    }
+                    case LBL: {
+                        if (resolved_labels.ContainsKey(token.value)) {
+                            error_str = $"label '{token.value}' already defined.";
+                            error = true;
+                            break;
+                        }
+                        expect(CHR, ":");
+                        resolved_labels.Add(token.value, cur_address);
+                        try_resolve_labels();
                         break;
                     }
                     default: break; //how
                 }
             }
             if (error) buffer.Clear();
-            //MessageBox.Show($"assembled with{(!error ? "out" : "")} problems", "assembler");
         }
     }
 }

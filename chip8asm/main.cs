@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -43,12 +44,20 @@ namespace chip8asm {
             tb_main.Text += $"# supported opcodes: \n";
             foreach (var opcode in opcodes)
                 tb_main.Text += $"#\t{opcode}\n";
-            tb_main.Text += $@"JMP $0262 
-RAW $EAAC
-SET IR, $0AEA
-RND VD, $00AA
-JSR $0020
-DRW V9, VB, $4";
+            tb_main.Text += $@"
+       SET V2, $00
+<START:
+       LSP V2
+       DRW V0, V1, $05
+       ADD V2, $01
+       ADD V0, $05
+       SNE V0, $3C
+       JMP <INCY
+       JMP <START
+<INCY:
+       ADD V1, $06
+       SET V0, $00
+       JMP <START";
         }
         protected override void Dispose(bool disposing) {
             if (disposing) {
@@ -72,7 +81,23 @@ DRW V9, VB, $4";
             e.ChangedRange.SetStyle(opcode_style, $@"\b({string.Join("|", opcodes)})\b", RegexOptions.IgnoreCase);
             e.ChangedRange.SetStyle(register_style, $@"\bV[A-z]\b|\bV[0-9]\b|\bIR\b|\bBCD\b", RegexOptions.IgnoreCase);
             e.ChangedRange.SetStyle(number_style, @"\d+|\$[0-9a-fA-F]+");
-            new assembler().assemble(tb_main.Text);
+        }
+
+        private void itm_compile_click(object sender, EventArgs e) {
+            using var sfd = new SaveFileDialog() {
+                Title = "Select a path to assemble the file to.",
+                Filter = "CHIP-8 Binaries|*.bin",
+            };
+            var asm = new assembler();
+            asm.assemble(tb_main.Text);
+            if (!asm.successful) {
+                MessageBox.Show($"error: \n{asm.error_str}", "assembler");
+                return;
+            }
+            if (sfd.ShowDialog() == DialogResult.OK) {
+                File.WriteAllBytes(sfd.FileName, asm.output);
+                MessageBox.Show("assembled without errors.");
+            }
         }
     }
 }
