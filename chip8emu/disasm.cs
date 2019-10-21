@@ -92,7 +92,7 @@ namespace chip8emu {
             dt.Text = $"DelayTimer: {chip.cpu.delay_timer}";
             st.Text = $"SoundTimer: {chip.cpu.sound_timer}";
 
-            lb_exec.Text = $"Executing: \n{printer.run(chip.cpu.memory.get16(chip.cpu.pc))}";
+            lb_exec.Text = $"Executing: \n{(chip.cpu.halt ? "Nothing" : printer.run(chip.cpu.memory.get16(chip.cpu.pc)))}";
 
             for (int i = 0; i < 16; i++)
                 lbregs[i].Text = $"V{i:X}: {chip.cpu.v[i]}";
@@ -105,7 +105,9 @@ namespace chip8emu {
             if (!hb_mem.IsDisposed)
                 hb_mem.ByteProvider = new Be.Windows.Forms.DynamicByteProvider(chip.cpu.memory.raw);
             //tb_hex.Text = BitConverter.ToString(chip.cpu.memory.raw).Replace('-', ' ');
-            ops.Text = $"Operations Per Second: {chip.ops}";
+            if (!chip.cpu.halt) {
+                ops.Text = $"Operations Per Second: {chip.ops}";
+            } else ops.Text = $"Halted!";
         }
     }
 }

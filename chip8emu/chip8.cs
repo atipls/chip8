@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 namespace chip8emu {
     public class constants {
-        public const int size = 0xFFF;
+        public const int size = 0x1000;
         public const int stack_size = 12;
         public const int rom_start = 0x200;
         public const int font_start = 0x50;
@@ -40,6 +40,7 @@ namespace chip8emu {
         ushort instr = 0;
         public memory memory;
         public video video;
+        public bool halt = false;
 
         Random random;
         public cpu() {
@@ -48,6 +49,11 @@ namespace chip8emu {
             random = new Random();
         }
         public void update() {
+            if (halt || pc > 0xFFD) {
+                halt = true;
+                return;
+            }
+
             instr = memory.get16(pc);
             pc += 2;
 
@@ -198,11 +204,9 @@ unresolved:
             ops = 0;
             last = DateTime.Now;
         }
-        public void load(string file) {
-            if (!File.Exists(file))
-                return; //TODO: show error message or crash
+        public void load(byte[] raw) {
             init();
-            cpu.memory.write(File.ReadAllBytes(file), constants.rom_start);
+            cpu.memory.write(raw, constants.rom_start);
         }
         public void update() {
             //for the disassembler
@@ -215,6 +219,7 @@ unresolved:
             cpu.update();
             //draw maybe
         }
+
         public byte[] font_buffer = new byte[] {
                 0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 	            0x20, 0x60, 0x20, 0x20, 0x70, // 1

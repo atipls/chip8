@@ -37,7 +37,7 @@ namespace chip8emu {
             SetStyle(ControlStyles.UserPaint, true);
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
 
-            chip8.load(chip8emu.main.path ?? "opcode_test2.bin");
+            chip8.load(chip8emu.main.binary ?? new byte[] { 0x00 });
             disasm = new disasm(chip8);
             disasm.Show();
         }
@@ -77,6 +77,8 @@ namespace chip8emu {
         private void on_key_down(object sender, KeyEventArgs e) {
             if (keymap.ContainsKey(e.KeyCode))
                 chip8.cpu.keys[keymap[e.KeyCode]] = true;
+            if (e.KeyCode == Keys.Escape)
+                chip8.init();
         }
         private void on_key_up(object sender, KeyEventArgs e) {
             if (keymap.ContainsKey(e.KeyCode))
