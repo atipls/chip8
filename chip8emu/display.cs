@@ -55,6 +55,9 @@ namespace chip8emu {
             Process.GetCurrentProcess().Kill(); //yeah not the most elegant way to end a program is it
             base.OnFormClosing(e);
         }
+        private Brush color1 = Brushes.White;
+        private Brush color2 = Brushes.DarkCyan;
+
         protected override async void OnPaint(PaintEventArgs e) {
             var then = DateTime.Now;
             while (!chip8.cpu.video.draw) {
@@ -65,8 +68,8 @@ namespace chip8emu {
             for (int x = 0; x < constants.x_size; x++) {
                 for (int y = 0; y < constants.y_size; y++) {
                     if (chip8.cpu.video.raw[x, y])
-                        e.Graphics.FillRectangle(Brushes.White, x * 5, y * 5, 5, 5);
-                    else e.Graphics.FillRectangle(Brushes.DarkCyan, x * 5, y * 5, 5, 5);
+                        e.Graphics.FillRectangle(color1, x * 5, y * 5, 5, 5);
+                    else e.Graphics.FillRectangle(color2, x * 5, y * 5, 5, 5);
                 }
             }
             chip8.cpu.video.draw = false;
@@ -83,6 +86,18 @@ namespace chip8emu {
         private void on_key_up(object sender, KeyEventArgs e) {
             if (keymap.ContainsKey(e.KeyCode))
                 chip8.cpu.keys[keymap[e.KeyCode]] = false;
+        }
+
+        private void color1_click(object sender, EventArgs e) {
+            using var cd = new ColorDialog();
+            if (cd.ShowDialog() == DialogResult.OK)
+                color1 = new SolidBrush(cd.Color);
+        }
+
+        private void color2_click(object sender, EventArgs e) {
+            using var cd = new ColorDialog();
+            if (cd.ShowDialog() == DialogResult.OK)
+                color2 = new SolidBrush(cd.Color);
         }
     }
 }
