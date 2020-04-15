@@ -48,6 +48,12 @@ namespace chip8emu {
             video = new video();
             random = new Random();
         }
+        public void timer_update() {
+            if (delay_timer > 0)
+                delay_timer--;
+            if (sound_timer > 0)
+                sound_timer--;
+        }
         public void update() {
             if (halt || pc > 0xFFD) {
                 halt = true;
@@ -185,10 +191,6 @@ namespace chip8emu {
 unresolved:
                     Debug.WriteLine($"Unknown instruction: {instr:X4}"); break;
             }
-            if (delay_timer > 0)
-                delay_timer--;
-            if (sound_timer > 0)
-                sound_timer--;
         }
     }
     public class chip8 {
@@ -217,7 +219,6 @@ unresolved:
             } else handled++;
 
             cpu.update();
-            //draw maybe
         }
 
         public byte[] font_buffer = new byte[] {

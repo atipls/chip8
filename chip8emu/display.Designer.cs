@@ -22,6 +22,7 @@
             this.xToolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.color1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.color2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this._60hz = new System.Windows.Forms.Timer(this.components);
             this.main.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -90,6 +91,12 @@
             this.color2ToolStripMenuItem.Text = "color 2";
             this.color2ToolStripMenuItem.Click += new System.EventHandler(this.color2_click);
             // 
+            // _60hz
+            // 
+            this._60hz.Enabled = true;
+            this._60hz.Interval = 16;
+            this._60hz.Tick += new System.EventHandler(this._60hz_Tick);
+            // 
             // display
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -120,6 +127,7 @@
         private System.Windows.Forms.ToolStripMenuItem xToolStripMenuItem4;
         private System.Windows.Forms.ToolStripMenuItem color1ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem color2ToolStripMenuItem;
+        private System.Windows.Forms.Timer _60hz;
     }
 }
 

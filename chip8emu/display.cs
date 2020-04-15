@@ -99,5 +99,6 @@ namespace chip8emu {
             if (cd.ShowDialog() == DialogResult.OK)
                 color2 = new SolidBrush(cd.Color);
         }
+        private void _60hz_Tick(object sender, EventArgs e) => chip8.cpu.timer_update();
     }
 }

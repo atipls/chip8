@@ -78,7 +78,7 @@ namespace chip8emu {
             this.chip = chip;
             for (int i = 0; i < constants.size / 2; i += 2) {
                 ushort instr = chip.cpu.memory.get16(i);
-                lv_instructions.Items.Add(new ListViewItem(new string[] { $"{i.ToString("X")} [{instr.ToString("X")}]", printer.run(instr) }));
+                lv_instructions.Items.Add(new ListViewItem(new string[] { $"{i:X4} [{instr:X4}]", printer.run(instr) }));
             }
         }
         public void update() {
