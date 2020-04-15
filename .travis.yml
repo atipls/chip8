@@ -1,0 +1,3 @@
+language: csharp
+solution: chip8.sln
+mono: latest

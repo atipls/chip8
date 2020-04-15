@@ -63,7 +63,6 @@
             this.lv_instructions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.ch_hex,
             this.ch_opcode});
-            this.lv_instructions.FullRowSelect = true;
             this.lv_instructions.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.lv_instructions.HideSelection = false;
             this.lv_instructions.Location = new System.Drawing.Point(0, 0);

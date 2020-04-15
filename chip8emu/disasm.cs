@@ -109,5 +109,6 @@ namespace chip8emu {
                 ops.Text = $"Operations Per Second: {chip.ops}";
             } else ops.Text = $"Halted!";
         }
+
     }
 }
