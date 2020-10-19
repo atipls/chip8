@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace chip8asm {
-    class token {
-        public enum tt { //token type
+namespace CHIP8.Asm {
+    class Token {
+        public enum TokenType {
             //opcodes
             JMP, JSR, SEQ, SNE,
             JNE, JRE, RND, CLS,
@@ -21,15 +21,16 @@ namespace chip8asm {
             NUM, //number like an address or a literal
             CHR, //character like , or -
         }
-        public tt type { get; private set; }
-        public string value { get; private set; }
+        public TokenType Type { get; private set; }
+        public string Value { get; private set; }
 
-        public token(tt type, string value) {
-            this.type = type;
-            this.value = value;
+        public Token(TokenType type, string value) {
+            Type = type;
+            Value = value;
         }
+
         public override string ToString() {
-            return $"{type:F}: {value}";
+            return $"{Type:F}: {Value}";
         }
     }
 }

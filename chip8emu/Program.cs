@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace chip8emu {
-    static class main {
+    static class Program {
         public static byte[] binary;
         [STAThread]
         static void Main(string[] args) {
@@ -19,7 +19,7 @@ namespace chip8emu {
                     }
                     try {
                         binary = Convert.FromBase64String(args[1]);
-                    } catch (Exception ex) { MessageBox.Show(ex.Message.ToLower(), "exception!"); return; }
+                    } catch (Exception ex) { MessageBox.Show(ex.Message.ToLower(), "Exception!"); return; }
                 } else {
                     var path = args.First();
                     if (!File.Exists(path)) {

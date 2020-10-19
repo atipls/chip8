@@ -37,7 +37,7 @@ namespace chip8emu {
             SetStyle(ControlStyles.UserPaint, true);
             SetStyle(ControlStyles.AllPaintingInWmPaint, true);
 
-            chip8.load(chip8emu.main.binary ?? new byte[] { 0x00 });
+            chip8.load(chip8emu.Program.binary ?? new byte[] { 0x00 });
             disasm = new disasm(chip8);
             disasm.Show();
         }

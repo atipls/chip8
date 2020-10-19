@@ -6,258 +6,299 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Globalization;
-using static chip8asm.token.tt;
-namespace chip8asm {
-    class assembler {
-        public byte[] output => buffer.ToArray();
-        public List<token> tokens { get; private set; } = new List<token>();
-        public bool successful => !error;
-        public string error_str { get; private set; } = "";
 
-        private List<byte> buffer = new List<byte>();
-        private int pos;
-        private bool end => pos >= tokens.Count;
-        private ushort cur_address => (ushort)(0x200 /*chip8 constant*/ + buffer.Count);
-        private bool error = false;
+namespace CHIP8.Asm {
+    using static Token.TokenType;
+    class Assembler {
+        public byte[] Output => Buffer.ToArray();
+        public List<Token> Tokens { get; private set; } = new List<Token>();
 
-        private Dictionary<string, int> unresolved_labels = new Dictionary<string, int>();
-        private Dictionary<string, ushort> resolved_labels = new Dictionary<string, ushort>();
+        public string Error { get; private set; } = "";
 
-        private void emit(ushort raw) => emit((byte)((raw & 0xFF00) >> 8), (byte)(raw & 0x00FF));
-        private void emit(params byte[] raw) => buffer.AddRange(raw);
-        private void emit_x(ushort opcode) {
+        private List<byte> Buffer = new List<byte>();
+        private int CurPos;
+        private bool AtEnd => CurPos >= Tokens.Count;
+        private ushort Address => (ushort)(0x200 /*chip8 constant*/ + Buffer.Count);
+
+        private Dictionary<string, int> UnresolvedLabels = new Dictionary<string, int>();
+        private Dictionary<string, ushort> ResolvedLabels = new Dictionary<string, ushort>();
+
+        private void Emit(ushort raw) => Emit((byte)((raw & 0xFF00) >> 8), (byte)(raw & 0x00FF));
+        private void Emit(params byte[] raw) => Buffer.AddRange(raw);
+        private void EmitX(ushort opcode) {
             ushort instr = opcode;
-            instr |= (ushort)(register() << 8);
-            emit(instr);
+            instr |= (ushort)(GetRegisterNumber() << 8);
+            Emit(instr);
         }
-        private void emit_xy(ushort opcode) {
+
+        private void EmitXY(ushort opcode) {
             ushort instr = opcode;
-            instr |= (ushort)(register() << 8);
-            expect(CHR, ",");
-            instr |= (ushort)(register() << 4);
-            emit(instr);
+            instr |= (ushort)(GetRegisterNumber() << 8);
+            Expect(CHR, ",");
+            instr |= (ushort)(GetRegisterNumber() << 4);
+            Emit(instr);
         }
-        private token cur => tokens[pos];
-        private token expect(token.tt type, string value = null) {
-            if (!end && cur.type == type) {
+
+        private Token CurToken => Tokens[CurPos];
+
+        private Token Expect(Token.TokenType type, string value = null) {
+            if (!AtEnd && CurToken.Type == type) {
                 if (value == null)
-                    return tokens[pos++];
-                if (cur.value == value) {
-                    return tokens[pos++];
-                } else {
-                    error_str = $"expected '{value}', got '{cur.value}' instead.";
-                    error = true;
-                    return null;
-                }
+                    return Tokens[CurPos++];
+                if (CurToken.Value == value)
+                    return Tokens[CurPos++];
+                throw new Exception($"Expected '{value}', got '{CurToken.Value}' instead.");
             }
-            error_str = $"expected type '{type}', got '{cur.type}' instead.";
-            error = true;
-            return null;
+            throw new Exception($"Expected type '{type}', got '{CurToken.Type}' instead.");
         }
-        public assembler() => this.pos = 0;
 
-        private int register() {
-            var reg = expect(REG);
+        public Assembler() => CurPos = 0;
+
+        private int GetRegisterNumber() {
+            var reg = Expect(REG);
             if (reg != null) {
-                if (reg.value != "ir")
-                    return byte.Parse(reg.value.Substring(1, 1), NumberStyles.HexNumber);
+                if (reg.Value != "ir")
+                    return byte.Parse(reg.Value.Substring(1, 1), NumberStyles.HexNumber);
                 return -1;
             }
-            error_str = $"expected type '{REG}', got '{cur.type}' instead.";
-            error = true;
-            return 0;
+            throw new Exception($"Expected register, got '{CurToken.Type}' instead.");
         }
-        private void try_resolve_labels() {
-            foreach (var label in resolved_labels) {
-                if (unresolved_labels.ContainsKey(label.Key)) {
-                    var patchpos = unresolved_labels[label.Key];
-                    var address = resolved_labels[label.Key];
-                    ushort instr = (ushort)((buffer[patchpos] << 8) | buffer[patchpos + 1]);
+
+        private void TryResolvingLabels() {
+            foreach (var label in ResolvedLabels) {
+                if (UnresolvedLabels.ContainsKey(label.Key)) {
+                    var patchpos = UnresolvedLabels[label.Key];
+                    var address = ResolvedLabels[label.Key];
+                    ushort instr = (ushort)((Buffer[patchpos] << 8) | Buffer[patchpos + 1]);
                     instr |= address;
-                    buffer[patchpos] = (byte)((instr & 0xFF00) >> 8);
-                    buffer[patchpos + 1] = (byte)(instr & 0x00FF);
-                    unresolved_labels.Remove(label.Key);
+                    Buffer[patchpos] = (byte)((instr & 0xFF00) >> 8);
+                    Buffer[patchpos + 1] = (byte)(instr & 0x00FF);
+                    UnresolvedLabels.Remove(label.Key);
                 }
             }
         }
-        private ushort address() {
-            switch (cur.type) {
+
+        private ushort GetAddress() {
+            switch (CurToken.Type) {
                 case NUM:
                     int val;
-                    if (int.TryParse(cur.value, NumberStyles.HexNumber, null, out val) && val < 0xFFF) {
-                        pos++;
+                    if (int.TryParse(CurToken.Value, NumberStyles.HexNumber, null, out val) && val < 0xFFF) {
+                        CurPos++;
                         return (ushort)val;
                     }
-                    if (val > 0xFFF) {
-                        pos++;
-                        error_str = $"too big literal '{val:X}' for a valid address.";
-                        error = true;
-                    }
+                    if (val >= 0xFFF)
+                        throw new Exception($"Too big literal '{val:X}' for a valid address.");
                     break;
                 case LBL:
-                    if (resolved_labels.ContainsKey(cur.value)) {
-                        var addr = resolved_labels[cur.value];
-                        pos++;
+                    if (ResolvedLabels.ContainsKey(CurToken.Value)) {
+                        var addr = ResolvedLabels[CurToken.Value];
+                        CurPos++;
                         return addr;
                     } else {
-                        unresolved_labels.Add(cur.value, buffer.Count);
-                        pos++;
-                        return 0; //placeholder
+                        UnresolvedLabels.Add(CurToken.Value, Buffer.Count);
+                        CurPos++;
+                        return 0;
                     }
                 default:
-                    error_str = $"unknown token {cur.type}";
-                    error = true;
-                    break;
+                    throw new Exception($"Unexpected {CurToken.Type}");
             }
             return 0;
         }
-        private int literal(int max) {
-            var num = expect(NUM);
+
+        private int GetLiteral(int max) {
+            var num = Expect(NUM);
             if (num != null) {
-                if (int.TryParse(num.value, NumberStyles.HexNumber, null, out int val) && val < max)
+                if (int.TryParse(num.Value, NumberStyles.HexNumber, null, out int val) && val < max)
                     return val;
-                else {
-                    error_str = $"'{val:X}' too big literal, expected max '{max:X}'";
-                    error = true;
-                    return 0;
-                }
+                throw new Exception($"'{val:X}' Too big literal, max '{max:X}'");
             }
-            return 0; //if num is null we have already set the error in 'expect'
+            throw new NotImplementedException();
         }
-        public void assemble(string source) {
-            lexer.run(source);
-            tokens = lexer.tokens;
-            // address = 0x200;
-            while (!end && !error) {
-                var token = tokens[pos++];
-                Debug.WriteLine($"{pos - 1}: {token}");
-                switch (token.type) {
-                    case JMP: emit((ushort)(0x1000 | address())); break; //1NNN
-                    case JSR: emit((ushort)(0x2000 | address())); break; //2NNN
-                    case SEQ: { //3XNN or 5XY0, depending if its a literal or a register
-                        ushort instr = 0x0000;
-                        instr |= (ushort)(register() << 8);
-                        expect(CHR, ",");
-                        if (cur.type == NUM)
-                            instr |= (ushort)(0x3000 | literal(0xFF));
-                        else instr |= (ushort)(0x5000 | (register() << 4));
-                        emit(instr);
-                        break;
+
+        public bool Assemble(string source) {
+            Error = "";
+            Buffer.Clear();
+            UnresolvedLabels.Clear();
+            ResolvedLabels.Clear();
+
+            try {
+                Lexer.Run(source);
+                CurPos = 0;
+                Tokens = Lexer.Tokens;
+
+                while (!AtEnd) {
+                    var token = Tokens[CurPos++];
+                    Debug.WriteLine($"{CurPos - 1}: {token}");
+                    switch (token.Type) {
+                        case JMP:
+                            Emit((ushort)(0x1000 | GetAddress()));
+                            break; //1NNN
+                        case JSR:
+                            Emit((ushort)(0x2000 | GetAddress()));
+                            break; //2NNN
+                        case SEQ: { //3XNN or 5XY0, depending if its a literal or a register
+                                ushort instr = 0x0000;
+                                instr |= (ushort)(GetRegisterNumber() << 8);
+                                Expect(CHR, ",");
+                                if (CurToken.Type == NUM)
+                                    instr |= (ushort)(0x3000 | GetLiteral(0xFF));
+                                else
+                                    instr |= (ushort)(0x5000 | (GetRegisterNumber() << 4));
+                                Emit(instr);
+                                break;
+                            }
+                        case SNE: { //4XNN
+                                ushort instr = 0x4000;
+                                instr |= (ushort)(GetRegisterNumber() << 8);
+                                Expect(CHR, ",");
+                                instr |= (ushort)GetLiteral(0xFF);
+                                Emit(instr);
+                                break;
+                            }
+                        case JNE:
+                            EmitXY(0x9000);
+                            break; //9XY0
+                        case JRE:
+                            Emit((ushort)(0xB000 | GetAddress()));
+                            break; //BNNN
+                        case RND: { //CXNN
+                                ushort instr = 0xC000;
+                                instr |= (ushort)(GetRegisterNumber() << 8);
+                                Expect(CHR, ",");
+                                instr |= (ushort)GetLiteral(0xFF);
+                                Emit(instr);
+                                break;
+                            }
+                        case CLS:
+                            Emit(0x00E0);
+                            break; //00E0
+                        case RET:
+                            Emit(0x00EE);
+                            break; //00EE
+                        case SKN:
+                            EmitXY(0xE0A1);
+                            break; //EXA1
+                        case SKK:
+                            EmitXY(0xE09E);
+                            break; //EX9E
+                        case SET: {
+                                ushort instr = 0x0000; //ANNN / 6XNN / 8XY0 depending on instructions
+                                var reg1 = GetRegisterNumber();
+                                Expect(CHR, ",");
+                                if (reg1 == -1)
+                                    instr |= (ushort)(0xA000 | GetAddress()); //ANNN
+                                else {
+                                    if (CurToken.Type == NUM) //6XNN
+                                        instr |= (ushort)(0x6000 | (reg1 << 8) | GetLiteral(0xFF));
+                                    else
+                                        instr |= (ushort)(0x8000 | (reg1 << 8) | (GetRegisterNumber() << 4)); //8XY0
+                                }
+                                Emit(instr);
+                                break;
+                            }
+                        case OR:
+                            EmitXY(0x8001);
+                            break; //8XY1
+                        case XOR:
+                            EmitXY(0x8003);
+                            break; //8XY3
+                        case SUB:
+                            EmitXY(0x8005);
+                            break; //8XY5
+                        case SHR:
+                            EmitX(0x8006);
+                            break; //8XY6
+                        case SNB:
+                            EmitXY(0x8007);
+                            break; //8XY7
+                        case SHL:
+                            EmitX(0x800E);
+                            break; //8XYE
+                        case LDT:
+                            EmitX(0xF007);
+                            break; //FX06
+                        case WKY:
+                            EmitX(0xF00A);
+                            break; //FX0A
+                        case SDT:
+                            EmitX(0xF015);
+                            break; //FX15
+                        case SST:
+                            EmitX(0xF018);
+                            break; //FX18
+                        case ADD: {
+                                ushort instr = 0x0000; //FX1E / 7XNN / 8XY4 depending on instructions
+                                var reg1 = GetRegisterNumber();
+                                Expect(CHR, ",");
+                                if (reg1 == -1)
+                                    instr |= (ushort)(0xF01E | (GetRegisterNumber() << 8)); //FX1E
+                                else {
+                                    if (CurToken.Type == NUM) //7XNN
+                                        instr |= (ushort)(0x7000 | (reg1 << 8) | GetLiteral(0xFF));
+                                    else
+                                        instr |= (ushort)(0x8004 | (reg1 << 8) | (GetRegisterNumber() << 4)); //8XY4
+                                }
+                                Emit(instr);
+                                break;
+                            }
+                        case LSP:
+                            EmitX(0xF029);
+                            break; //FX29
+                        case BCD:
+                            EmitX(0xF033);
+                            break; //FX33
+                        case STO: {
+                                ushort instr = 0xF000;
+                                var reg1 = GetRegisterNumber();
+                                if (reg1 == -1) {
+                                    instr |= 0x65;
+                                    instr |= (ushort)(GetRegisterNumber() << 8);
+                                } else {
+                                    instr |= 0x55;
+                                    instr |= (ushort)(reg1 << 8);
+                                }
+                                Emit(instr);
+                                break;
+                            }
+                        case DRW: { //DXYN
+                                ushort instr = 0xD000;
+                                instr |= (ushort)(GetRegisterNumber() << 8);
+                                Expect(CHR, ",");
+                                instr |= (ushort)(GetRegisterNumber() << 4);
+                                Expect(CHR, ",");
+                                instr |= (ushort)GetLiteral(0xF);
+                                Emit(instr);
+                                break;
+                            }
+                        case RAW: { //CUSTOM
+                                var num = Expect(NUM);
+                                if (num != null) {
+                                    for (int i = 0; i < num.Value.Length; i += 2)
+                                        Emit(byte.Parse(num.Value.Substring(i, 2), NumberStyles.HexNumber));
+                                    if (num.Value.Length % 2 == 1)
+                                        Emit(byte.Parse(num.Value.Substring(num.Value.Length - 1, 1), NumberStyles.HexNumber));
+                                } else
+                                    throw new Exception("Expected raw data after 'RAW' pseudo-opcode");
+                                break;
+                            }
+                        case LBL: {
+                                if (ResolvedLabels.ContainsKey(token.Value))
+                                    throw new Exception($"label '{token.Value}' already defined.");
+                                Expect(CHR, ":");
+                                ResolvedLabels.Add(token.Value, Address);
+                                TryResolvingLabels();
+                                break;
+                            }
+                        default:
+                            break; //how
                     }
-                    case SNE: { //4XNN
-                        ushort instr = 0x4000;
-                        instr |= (ushort)(register() << 8);
-                        expect(CHR, ",");
-                        instr |= (ushort)literal(0xFF);
-                        emit(instr);
-                        break;
-                    }
-                    case JNE: emit_xy(0x9000); break; //9XY0
-                    case JRE: emit((ushort)(0xB000 | address())); break; //BNNN
-                    case RND: { //CXNN
-                        ushort instr = 0xC000;
-                        instr |= (ushort)(register() << 8);
-                        expect(CHR, ",");
-                        instr |= (ushort)literal(0xFF);
-                        emit(instr);
-                        break;
-                    }
-                    case CLS: emit(0x00E0); break; //00E0
-                    case RET: emit(0x00EE); break; //00EE
-                    case SKN: emit_xy(0xE0A1); break; //EXA1
-                    case SKK: emit_xy(0xE09E); break; //EX9E
-                    case SET: {
-                        ushort instr = 0x0000; //ANNN / 6XNN / 8XY0 depending on instructions
-                        var reg1 = register();
-                        expect(CHR, ",");
-                        if (reg1 == -1)
-                            instr |= (ushort)(0xA000 | address()); //ANNN
-                        else {
-                            if (cur.type == NUM) //6XNN
-                                instr |= (ushort)(0x6000 | (reg1 << 8) | literal(0xFF));
-                            else instr |= (ushort)(0x8000 | (reg1 << 8) | (register() << 4)); //8XY0
-                        }
-                        emit(instr);
-                        break;
-                    }
-                    case OR: emit_xy(0x8001); break; //8XY1
-                    case XOR: emit_xy(0x8003); break; //8XY3
-                    case SUB: emit_xy(0x8005); break; //8XY5
-                    case SHR: emit_x(0x8006); break; //8XY6
-                    case SNB: emit_xy(0x8007); break; //8XY7
-                    case SHL: emit_x(0x800E); break; //8XYE
-                    case LDT: emit_x(0xF007); break; //FX06
-                    case WKY: emit_x(0xF00A); break; //FX0A
-                    case SDT: emit_x(0xF015); break; //FX15
-                    case SST: emit_x(0xF018); break; //FX18
-                    case ADD: {
-                        ushort instr = 0x0000; //FX1E / 7XNN / 8XY4 depending on instructions
-                        var reg1 = register();
-                        expect(CHR, ",");
-                        if (reg1 == -1)
-                            instr |= (ushort)(0xF01E | (register() << 8)); //FX1E
-                        else {
-                            if (cur.type == NUM) //7XNN
-                                instr |= (ushort)(0x7000 | (reg1 << 8) | literal(0xFF));
-                            else instr |= (ushort)(0x8004 | (reg1 << 8) | (register() << 4)); //8XY4
-                        }
-                        emit(instr);
-                        break;
-                    }
-                    case LSP: emit_x(0xF029); break; //FX29
-                    case BCD: emit_x(0xF033); break; //FX33
-                    case STO: {
-                        ushort instr = 0xF000;
-                        var reg1 = register();
-                        if (reg1 == -1) {
-                            instr |= 0x65;
-                            instr |= (ushort)(register() << 8);
-                        } else {
-                            instr |= 0x55;
-                            instr |= (ushort)(reg1 << 8);
-                        }
-                        emit(instr);
-                        break;
-                    }
-                    case DRW: { //DXYN
-                        ushort instr = 0xD000;
-                        instr |= (ushort)(register() << 8);
-                        expect(CHR, ",");
-                        instr |= (ushort)(register() << 4);
-                        expect(CHR, ",");
-                        instr |= (ushort)literal(0xF);
-                        emit(instr);
-                        break;
-                    }
-                    case RAW: { //CUSTOM
-                        var num = expect(NUM);
-                        if (num != null) {
-                            for (int i = 0; i < num.value.Length; i += 2)
-                                emit(byte.Parse(num.value.Substring(i, 2), NumberStyles.HexNumber));
-                            if (num.value.Length % 2 == 1)
-                                emit(byte.Parse(num.value.Substring(num.value.Length - 1, 1), NumberStyles.HexNumber));
-                        } else {
-                            error_str = "expected raw data after 'RAW' pseudo-opcode";
-                            error = true;
-                            break;
-                        }
-                        break;
-                    }
-                    case LBL: {
-                        if (resolved_labels.ContainsKey(token.value)) {
-                            error_str = $"label '{token.value}' already defined.";
-                            error = true;
-                            break;
-                        }
-                        expect(CHR, ":");
-                        resolved_labels.Add(token.value, cur_address);
-                        try_resolve_labels();
-                        break;
-                    }
-                    default: break; //how
                 }
+            } catch (Exception ex) {
+                Buffer.Clear();
+                Error = ex.Message;
+                return false;
             }
-            if (error) buffer.Clear();
+            return true;
         }
     }
 }

@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static chip8asm.token.tt;
-namespace chip8asm {
-    class lexer {
-        private static string[] keywords = new string[] {
+namespace CHIP8.Asm {
+    using static Token.TokenType;
+    class Lexer {
+        static readonly string[] Keywords = new string[] {
             "jmp", "jsr", "seq", "sne",
             "jne", "jre", "rnd", "cls",
             "ret", "skn", "skk", "set",
@@ -16,7 +16,7 @@ namespace chip8asm {
             "sdt", "sst", "add", "lsp",
             "bcd", "sto", "drw", "raw"
         };
-        private static string[] registers = new string[] { //can use linq magic to generate these, i dont really care
+        static readonly string[] Registers = new string[] {
             "v0", "v1", "v2", "v3",
             "v4", "v5", "v6", "v7",
             "v8", "v9", "va", "vb",
@@ -24,75 +24,95 @@ namespace chip8asm {
             "ir"
         };
 
-        public static List<token> tokens = new List<token>();
-        private static bool end => pos >= source.Length;
-        private static int pos;
-        private static string source;
-        private static bool check(string st) {
-            if (pos + st.Length > source.Length)
+        public static List<Token> Tokens = new List<Token>();
+
+        private static bool AtEnd => CurPos >= CurSource.Length;
+
+        private static int CurPos;
+        private static string CurSource;
+
+        private static bool Matches(string token) {
+            if (CurPos + token.Length > CurSource.Length)
                 return false;
-            if (source.Substring(pos, st.Length) == st) {
-                pos += st.Length;
-                Debug.WriteLine($"pos {pos}: {st}");
+            if (CurSource.Substring(CurPos, token.Length) == token) {
+                CurPos += token.Length;
                 return true;
             }
-            //error reporting?
             return false;
         }
-        private static void whitespace() {
-            while (!end && char.IsWhiteSpace(source[pos]))
-                pos++;
-        }
-        private static void comments() {
-            while (true) {
-                if (!end && source[pos] == '#') {
-                    while (!end && source[pos] != '\n')
-                        pos++;
-                    if (!end && source[pos] == '\n')
-                        pos++;
-                } else return;
-            }
-        }
-        private static void number() {
-            string num = "";
-            while (!end && (char.IsNumber(source[pos]) || (source[pos] >= 'a' && source[pos] <= 'f')))
-                num += source[pos++];
-            if (!string.IsNullOrEmpty(num)) tokens.Add(new token(NUM, num));
-        }
-        private static void label() {
-            string lbl = "";
-            while (!end && char.IsLetterOrDigit(source[pos]))
-                lbl += source[pos++];
-            tokens.Add(new token(LBL, lbl));
-        }
-        private static void instructions() {
-            if (end) return;
-            foreach (var keyword in keywords) {
-                if (check(keyword))
-                    tokens.Add(new token(keyword.parse<token.tt>(), keyword));
-            }
-            foreach (var register in registers) {
-                if (check(register))
-                    tokens.Add(new token(REG, register));
-            }
-        }
-        public static void run(string src) {
-            source = src.ToLower();
-            while (!end) {
-                comments();
-                whitespace();
-                instructions();
-                if (end) return;
 
-                char chr = source[pos++];
+        private static void SkipWhitespace() {
+            while (!AtEnd && (char.IsWhiteSpace(CurSource[CurPos]) || CurSource[CurPos] == '\n' || CurSource[CurPos] == '\t'))
+                CurPos++;
+        }
+
+        private static void SkipComments() {
+            while (true) {
+                if (!AtEnd && CurSource[CurPos] == '#') {
+                    while (!AtEnd && CurSource[CurPos] != '\n')
+                        CurPos++;
+                    if (!AtEnd && CurSource[CurPos] == '\n')
+                        CurPos++;
+                } else
+                    return;
+            }
+        }
+
+        private static void LexNumber() {
+            string num = "";
+            while (!AtEnd && (char.IsNumber(CurSource[CurPos]) || (CurSource[CurPos] >= 'a' && CurSource[CurPos] <= 'f')))
+                num += CurSource[CurPos++];
+            if (!string.IsNullOrEmpty(num))
+                Tokens.Add(new Token(NUM, num));
+        }
+
+        private static void LexLabel() {
+            string label = "";
+            while (!AtEnd && char.IsLetterOrDigit(CurSource[CurPos]))
+                label += CurSource[CurPos++];
+            Tokens.Add(new Token(LBL, label));
+        }
+
+        private static void LexInstructions() {
+            if (AtEnd) return;
+            foreach (var keyword in Keywords) {
+                if (Matches(keyword))
+                    Tokens.Add(new Token(keyword.ParseEnum<Token.TokenType>(), keyword));
+            }
+            foreach (var register in Registers) {
+                if (Matches(register))
+                    Tokens.Add(new Token(REG, register));
+            }
+        }
+
+        public static void Run(string source) {
+            CurSource = source.ToLower();
+            while (!AtEnd) {
+                SkipComments();
+                SkipWhitespace();
+                LexInstructions();
+                if (AtEnd)
+                    return;
+
+                char chr = CurSource[CurPos++];
                 switch (chr) {
-                    case '-': case ':': case ',': tokens.Add(new token(CHR, $"{chr}")); break;
-                    case '$': number(); break;
-                    case '<': label(); break;
-                    case ' ': break;
-                    default:
-                        Debug.WriteLine($"unhandled character '{chr}'");
+                    case '-':
+                    case ':':
+                    case ',':
+                        Tokens.Add(new Token(CHR, $"{chr}"));
                         break;
+                    case '$':
+                        LexNumber();
+                        break;
+                    case '<':
+                        LexLabel();
+                        break;
+                    case ' ':
+                    case '\n':
+                    case '\t':
+                    default:
+                        break;
+                        //throw new Exception($"Unhandled character '{chr}'");
                 }
             }
         }
