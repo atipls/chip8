@@ -24,7 +24,7 @@ namespace CHIP8.Asm {
              "BCD", "STO", "DRW", "RAW"
         };
 
-        //todo: finish
+        // TODO: Finish
         public static string[] OpcodeReference = new string[] {
             "Jump to address. EX: JMP LABEL / JMP $0200",
             "Jump to subroutine. EX: JSR LABEL / JSR $0200",

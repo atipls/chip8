@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CHIP8.Emu", "chip8emu\CHIP8.Emu.csproj", "{7A6C166F-9474-42EB-A4E9-A4E8788BFFF1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CHIP8.Emu", "CHIP8.Emu\CHIP8.Emu.csproj", "{7A6C166F-9474-42EB-A4E9-A4E8788BFFF1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CHIP8.Asm", "chip8asm\CHIP8.Asm.csproj", "{FA900ECB-4886-4745-9C01-6DB58A0591A7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CHIP8.Asm", "CHIP8.Asm\CHIP8.Asm.csproj", "{FA900ECB-4886-4745-9C01-6DB58A0591A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

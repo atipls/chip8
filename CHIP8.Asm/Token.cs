@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace CHIP8.Asm {
     class Token {
         public enum TokenType {
-            //opcodes
+            // Opcodes
             JMP, JSR, SEQ, SNE,
             JNE, JRE, RND, CLS,
             RET, SKN, SKK, SET,
@@ -16,10 +16,10 @@ namespace CHIP8.Asm {
             SDT, SST, ADD, LSP,
             BCD, STO, DRW, RAW,
 
-            REG, //register from V0 to VF
-            LBL, //label
-            NUM, //number like an address or a literal
-            CHR, //character like , or -
+            REG, // Register from V0 to VF
+            LBL, // Label
+            NUM, // Number like an address or a literal
+            CHR, // Character like , or -
         }
         public TokenType Type { get; private set; }
         public string Value { get; private set; }

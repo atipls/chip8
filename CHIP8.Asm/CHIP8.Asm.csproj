@@ -4,22 +4,21 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7A6C166F-9474-42EB-A4E9-A4E8788BFFF1}</ProjectGuid>
+    <ProjectGuid>{FA900ECB-4886-4745-9C01-6DB58A0591A7}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>CHIP8.Emu</RootNamespace>
-    <AssemblyName>CHIP8.Emu</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <RootNamespace>CHIP8.Asm</RootNamespace>
+    <AssemblyName>CHIP8.Asm</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\debug\bin\</OutputPath>
+    <OutputPath>..\Bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -29,18 +28,19 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\release\bin\</OutputPath>
+    <OutputPath>..\Bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Be.Windows.Forms.HexBox, Version=1.6.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Be.Windows.Forms.HexBox.1.6.1\lib\net40\Be.Windows.Forms.HexBox.dll</HintPath>
+    <Reference Include="FastColoredTextBox, Version=2.16.26.100, Culture=neutral, PublicKeyToken=fb8aa12b994ef61b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sara-FCTB.2.16.26.100\lib\net35\FastColoredTextBox.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -52,26 +52,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="chip8.cs" />
-    <Compile Include="disasm.cs">
+    <Compile Include="Assembler.cs" />
+    <Compile Include="Lexer.cs" />
+    <Compile Include="Window.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="disasm.Designer.cs">
-      <DependentUpon>disasm.cs</DependentUpon>
+    <Compile Include="Window.Designer.cs">
+      <DependentUpon>Window.cs</DependentUpon>
     </Compile>
-    <Compile Include="display.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="display.Designer.cs">
-      <DependentUpon>display.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="disasm.resx">
-      <DependentUpon>disasm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="display.resx">
-      <DependentUpon>display.cs</DependentUpon>
+    <Compile Include="Token.cs" />
+    <Compile Include="Utils.cs" />
+    <EmbeddedResource Include="Window.resx">
+      <DependentUpon>Window.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

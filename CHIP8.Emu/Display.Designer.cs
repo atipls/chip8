@@ -1,5 +1,5 @@
-﻿namespace chip8emu {
-    partial class display {
+﻿namespace CHIP8.Emu {
+    partial class Display {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -82,20 +82,20 @@
             this.color1ToolStripMenuItem.Name = "color1ToolStripMenuItem";
             this.color1ToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.color1ToolStripMenuItem.Text = "color 1";
-            this.color1ToolStripMenuItem.Click += new System.EventHandler(this.color1_click);
+            this.color1ToolStripMenuItem.Click += new System.EventHandler(this.ChipForeClick);
             // 
             // color2ToolStripMenuItem
             // 
             this.color2ToolStripMenuItem.Name = "color2ToolStripMenuItem";
             this.color2ToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.color2ToolStripMenuItem.Text = "color 2";
-            this.color2ToolStripMenuItem.Click += new System.EventHandler(this.color2_click);
+            this.color2ToolStripMenuItem.Click += new System.EventHandler(this.ChipBackClick);
             // 
             // _60hz
             // 
             this._60hz.Enabled = true;
             this._60hz.Interval = 16;
-            this._60hz.Tick += new System.EventHandler(this._60hz_Tick);
+            this._60hz.Tick += new System.EventHandler(this.TimerTick);
             // 
             // display
             // 
@@ -108,9 +108,9 @@
             this.MinimizeBox = false;
             this.Name = "display";
             this.ShowIcon = false;
-            this.Text = "chip-8";
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.on_key_down);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.on_key_up);
+            this.Text = "CHIP-8";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnKeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.OnKeyUp);
             this.main.ResumeLayout(false);
             this.ResumeLayout(false);
 

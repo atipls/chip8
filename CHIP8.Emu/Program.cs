@@ -6,9 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace chip8emu {
+namespace CHIP8.Emu {
     static class Program {
-        public static byte[] binary;
+        public static byte[] Binary;
         [STAThread]
         static void Main(string[] args) {
             if (args.Length > 0) {
@@ -18,7 +18,7 @@ namespace chip8emu {
                         return;
                     }
                     try {
-                        binary = Convert.FromBase64String(args[1]);
+                        Binary = Convert.FromBase64String(args[1]);
                     } catch (Exception ex) { MessageBox.Show(ex.Message.ToLower(), "Exception!"); return; }
                 } else {
                     var path = args.First();
@@ -26,12 +26,12 @@ namespace chip8emu {
                         MessageBox.Show("select a valid file!", "");
                         return;
                     }
-                    binary = File.ReadAllBytes(path);
+                    Binary = File.ReadAllBytes(path);
                 }
             }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new display());
+            Application.Run(new Display());
         }
     }
 }

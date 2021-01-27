@@ -8,19 +8,20 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace chip8emu {
-    public partial class disasm : Form {
-        readonly chip8 chip;
-        static class printer {
-            public static string run(ushort instr) {
-                var x = (instr & 0x0F00) >> 8;
-                var y = (instr & 0x00F0) >> 4;
-                var nn = instr & 0x00FF;
-                var nnn = instr & 0x0FFF;
+namespace CHIP8.Emu {
+    public partial class Disassembler : Form {
+        readonly CHIP8 Chip;
 
-                switch ((instr & 0xF000) >> 12) {
+        static class Printer {
+            public static string Run(ushort Instruction) {
+                var x = (Instruction & 0x0F00) >> 8;
+                var y = (Instruction & 0x00F0) >> 4;
+                var nn = Instruction & 0x00FF;
+                var nnn = Instruction & 0x0FFF;
+
+                switch ((Instruction & 0xF000) >> 12) {
                     case 0:
-                        switch (instr & 0x000F) {
+                        switch (Instruction & 0x000F) {
                             case 0x0000: return "CLS"; //clear screen
                             case 0x000E: return "RET"; //return from subroutine
                         }
@@ -33,7 +34,7 @@ namespace chip8emu {
                     case 6: return $"SET V{x:X}, ${nn:X2}"; //set register to value
                     case 7: return $"ADD V{x:X}, ${nn:X2}"; //add value to register
                     case 8:
-                        switch (instr & 0x000F) {
+                        switch (Instruction & 0x000F) {
                             case 0: return $"SET V{x:X}, V{y:X}"; //set vx to vy
                             case 1: return $"OR  V{x:X}, V{y:X}"; //or vx with vy
                             case 2: return $"AND V{x:X}, V{y:X}"; //and vx with vy
@@ -49,15 +50,15 @@ namespace chip8emu {
                     case 0xA: return $"SET IR, ${nnn:X4}"; //set ir to value
                     case 0xB: return $"JRE ${nnn:X4}"; //jump to v0 + value
                     case 0xC: return $"RND V{x:X}, ${nn:X2}"; //set register to RAND&NN
-                    case 0xD: return $"DRW V{x:X}, V{y:X}, ${instr & 0x000F:X2}"; //draw at vx, vy, height n
+                    case 0xD: return $"DRW V{x:X}, V{y:X}, ${Instruction & 0x000F:X2}"; //draw at vx, vy, height n
                     case 0xE:
-                        switch (instr & 0x000F) {
+                        switch (Instruction & 0x000F) {
                             case 0x0001: return $"SKN V{x:X}"; //skip next instruction if key vx is not pressed
                             case 0x000E: return $"SKK V{x:X}"; //skip next instruction if key vx is pressed
                         }
                         goto default;
                     case 0xF:
-                        switch (instr & 0x00FF) {
+                        switch (Instruction & 0x00FF) {
                             case 7: return $"LDT V{x:X}"; //set vx to delay timer
                             case 0xA: return $"WKY V{x:X}"; //wait for key and place it to vx (blocking)
                             case 0x15: return $"SDT V{x:X}"; //set delay timer to vx
@@ -68,46 +69,48 @@ namespace chip8emu {
                             case 0x55: return $"STO V{x:X}, IR"; //set V0-vx to ir
                             case 0x65: return $"STO IR, V{x:X}"; //set V0-vx from ir
                         }
-                        return $"SYS ${instr & 0x0FFF:X2}";
-                    default: return $"RAW ${instr:X2}";
+                        return $"SYS ${Instruction & 0x0FFF:X2}";
+                    default: return $"RAW ${Instruction:X2}";
                 }
             }
         }
-        public disasm(chip8 chip) {
+
+        public Disassembler(CHIP8 chip) {
             InitializeComponent();
-            this.chip = chip;
-            for (int i = 0; i < constants.size / 2; i += 2) {
-                ushort instr = chip.cpu.memory.get16(i);
-                lv_instructions.Items.Add(new ListViewItem(new string[] { $"{i:X4} [{instr:X4}]", printer.run(instr) }));
+            Chip = chip;
+            for (int i = 0; i < Constants.RAMSize / 2; i += 2) {
+                var instruction = chip.CPU.Memory.Get16(i);
+                InstructionList.Items.Add(new ListViewItem(new string[] { $"{i:X4} [{instruction:X4}]", Printer.Run(instruction) }));
             }
         }
-        public void update() {
-            Label[] lbregs = { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, va, vb, vc, vd, ve, vf };
+
+        public void DisasmUpdate() {
+            Label[] RegLabels = { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, va, vb, vc, vd, ve, vf };
 
             Text = $"chip8 disassembler";
-            pc.Text = $"PC: {chip.cpu.pc:X}";
-            sp.Text = $"SP: {chip.cpu.sp:X}";
-            ir.Text = $"IR: {chip.cpu.ir:X}";
+            PC.Text = $"PC: {Chip.CPU.PC:X}";
+            SP.Text = $"SP: {Chip.CPU.SP:X}";
+            IR.Text = $"IR: {Chip.CPU.IR:X}";
 
-            dt.Text = $"DelayTimer: {chip.cpu.delay_timer}";
-            st.Text = $"SoundTimer: {chip.cpu.sound_timer}";
+            DT.Text = $"DelayTimer: {Chip.CPU.DelayTimer}";
+            ST.Text = $"SoundTimer: {Chip.CPU.SoundTimer}";
 
-            lb_exec.Text = $"Executing: \n{(chip.cpu.halt ? "Nothing" : printer.run(chip.cpu.memory.get16(chip.cpu.pc)))}";
+            State.Text = $"Executing: \n{(Chip.CPU.Halting ? "Nothing" : Printer.Run(Chip.CPU.Memory.Get16(Chip.CPU.PC)))}";
 
             for (int i = 0; i < 16; i++)
-                lbregs[i].Text = $"V{i:X}: {chip.cpu.v[i]}";
+                RegLabels[i].Text = $"V{i:X}: {Chip.CPU.V[i]}";
 
-            stack.Text = "Stack: \n";
-            if (chip.cpu.sp != 0) {
-                for (int i = 0; i < chip.cpu.sp; i++)
-                    stack.Text += $"{chip.cpu.memory.stack[i]:X2}\n";
-            } else stack.Text += "Empty.";
-            if (!hb_mem.IsDisposed)
-                hb_mem.ByteProvider = new Be.Windows.Forms.DynamicByteProvider(chip.cpu.memory.raw);
-            //tb_hex.Text = BitConverter.ToString(chip.cpu.memory.raw).Replace('-', ' ');
-            if (!chip.cpu.halt) {
-                ops.Text = $"Operations Per Second: {chip.ops}";
-            } else ops.Text = $"Halted!";
+            Stack.Text = "Stack: \n";
+            if (Chip.CPU.SP != 0) {
+                for (int i = 0; i < Chip.CPU.SP; i++)
+                    Stack.Text += $"{Chip.CPU.Memory.Stack[i]:X2}\n";
+            } else Stack.Text += "Empty.";
+            if (!MemoryHex.IsDisposed)
+                MemoryHex.ByteProvider = new Be.Windows.Forms.DynamicByteProvider(Chip.CPU.Memory.Raw);
+            // MemoryText.Text = BitConverter.ToString(chip.cpu.memory.raw).Replace('-', ' ');
+            if (!Chip.CPU.Halting) {
+                OperationsPerSec.Text = $"Operations Per Second: {Chip.OperationsPerSec}";
+            } else OperationsPerSec.Text = $"Halted!";
         }
 
     }

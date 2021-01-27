@@ -1,5 +1,5 @@
-﻿namespace chip8emu {
-    partial class disasm {
+﻿namespace CHIP8.Emu {
+    partial class Disassembler {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -23,15 +23,15 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            this.lv_instructions = new System.Windows.Forms.ListView();
+            this.InstructionList = new System.Windows.Forms.ListView();
             this.ch_hex = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ch_opcode = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.gb_main = new System.Windows.Forms.GroupBox();
-            this.lb_exec = new System.Windows.Forms.Label();
-            this.ops = new System.Windows.Forms.Label();
-            this.dt = new System.Windows.Forms.Label();
-            this.st = new System.Windows.Forms.Label();
-            this.stack = new System.Windows.Forms.Label();
+            this.State = new System.Windows.Forms.Label();
+            this.OperationsPerSec = new System.Windows.Forms.Label();
+            this.DT = new System.Windows.Forms.Label();
+            this.ST = new System.Windows.Forms.Label();
+            this.Stack = new System.Windows.Forms.Label();
             this.vf = new System.Windows.Forms.Label();
             this.ve = new System.Windows.Forms.Label();
             this.vd = new System.Windows.Forms.Label();
@@ -48,29 +48,29 @@
             this.v2 = new System.Windows.Forms.Label();
             this.v1 = new System.Windows.Forms.Label();
             this.v0 = new System.Windows.Forms.Label();
-            this.ir = new System.Windows.Forms.Label();
-            this.sp = new System.Windows.Forms.Label();
-            this.pc = new System.Windows.Forms.Label();
-            this.hb_mem = new Be.Windows.Forms.HexBox();
+            this.IR = new System.Windows.Forms.Label();
+            this.SP = new System.Windows.Forms.Label();
+            this.PC = new System.Windows.Forms.Label();
+            this.MemoryHex = new Be.Windows.Forms.HexBox();
             this.gb_main.SuspendLayout();
             this.SuspendLayout();
             // 
             // lv_instructions
             // 
-            this.lv_instructions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.InstructionList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lv_instructions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.InstructionList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.ch_hex,
             this.ch_opcode});
-            this.lv_instructions.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.lv_instructions.HideSelection = false;
-            this.lv_instructions.Location = new System.Drawing.Point(0, 0);
-            this.lv_instructions.Name = "lv_instructions";
-            this.lv_instructions.Size = new System.Drawing.Size(409, 224);
-            this.lv_instructions.TabIndex = 0;
-            this.lv_instructions.UseCompatibleStateImageBehavior = false;
-            this.lv_instructions.View = System.Windows.Forms.View.Details;
+            this.InstructionList.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.InstructionList.HideSelection = false;
+            this.InstructionList.Location = new System.Drawing.Point(0, 0);
+            this.InstructionList.Name = "lv_instructions";
+            this.InstructionList.Size = new System.Drawing.Size(409, 224);
+            this.InstructionList.TabIndex = 0;
+            this.InstructionList.UseCompatibleStateImageBehavior = false;
+            this.InstructionList.View = System.Windows.Forms.View.Details;
             // 
             // ch_hex
             // 
@@ -84,11 +84,11 @@
             // 
             // gb_main
             // 
-            this.gb_main.Controls.Add(this.lb_exec);
-            this.gb_main.Controls.Add(this.ops);
-            this.gb_main.Controls.Add(this.dt);
-            this.gb_main.Controls.Add(this.st);
-            this.gb_main.Controls.Add(this.stack);
+            this.gb_main.Controls.Add(this.State);
+            this.gb_main.Controls.Add(this.OperationsPerSec);
+            this.gb_main.Controls.Add(this.DT);
+            this.gb_main.Controls.Add(this.ST);
+            this.gb_main.Controls.Add(this.Stack);
             this.gb_main.Controls.Add(this.vf);
             this.gb_main.Controls.Add(this.ve);
             this.gb_main.Controls.Add(this.vd);
@@ -105,9 +105,9 @@
             this.gb_main.Controls.Add(this.v2);
             this.gb_main.Controls.Add(this.v1);
             this.gb_main.Controls.Add(this.v0);
-            this.gb_main.Controls.Add(this.ir);
-            this.gb_main.Controls.Add(this.sp);
-            this.gb_main.Controls.Add(this.pc);
+            this.gb_main.Controls.Add(this.IR);
+            this.gb_main.Controls.Add(this.SP);
+            this.gb_main.Controls.Add(this.PC);
             this.gb_main.Dock = System.Windows.Forms.DockStyle.Right;
             this.gb_main.Location = new System.Drawing.Point(409, 0);
             this.gb_main.Name = "gb_main";
@@ -118,48 +118,48 @@
             // 
             // lb_exec
             // 
-            this.lb_exec.AutoSize = true;
-            this.lb_exec.Location = new System.Drawing.Point(67, 168);
-            this.lb_exec.Name = "lb_exec";
-            this.lb_exec.Size = new System.Drawing.Size(57, 13);
-            this.lb_exec.TabIndex = 23;
-            this.lb_exec.Text = "Executing:";
+            this.State.AutoSize = true;
+            this.State.Location = new System.Drawing.Point(67, 168);
+            this.State.Name = "lb_exec";
+            this.State.Size = new System.Drawing.Size(57, 13);
+            this.State.TabIndex = 23;
+            this.State.Text = "Executing:";
             // 
             // ops
             // 
-            this.ops.AutoSize = true;
-            this.ops.Location = new System.Drawing.Point(7, 315);
-            this.ops.Name = "ops";
-            this.ops.Size = new System.Drawing.Size(120, 13);
-            this.ops.TabIndex = 22;
-            this.ops.Text = "Operations Per Second:";
+            this.OperationsPerSec.AutoSize = true;
+            this.OperationsPerSec.Location = new System.Drawing.Point(7, 315);
+            this.OperationsPerSec.Name = "ops";
+            this.OperationsPerSec.Size = new System.Drawing.Size(120, 13);
+            this.OperationsPerSec.TabIndex = 22;
+            this.OperationsPerSec.Text = "Operations Per Second:";
             // 
             // dt
             // 
-            this.dt.AutoSize = true;
-            this.dt.Location = new System.Drawing.Point(7, 41);
-            this.dt.Name = "dt";
-            this.dt.Size = new System.Drawing.Size(63, 13);
-            this.dt.TabIndex = 21;
-            this.dt.Text = "DelayTimer:";
+            this.DT.AutoSize = true;
+            this.DT.Location = new System.Drawing.Point(7, 41);
+            this.DT.Name = "dt";
+            this.DT.Size = new System.Drawing.Size(63, 13);
+            this.DT.TabIndex = 21;
+            this.DT.Text = "DelayTimer:";
             // 
             // st
             // 
-            this.st.AutoSize = true;
-            this.st.Location = new System.Drawing.Point(89, 41);
-            this.st.Name = "st";
-            this.st.Size = new System.Drawing.Size(67, 13);
-            this.st.TabIndex = 20;
-            this.st.Text = "SoundTimer:";
+            this.ST.AutoSize = true;
+            this.ST.Location = new System.Drawing.Point(89, 41);
+            this.ST.Name = "st";
+            this.ST.Size = new System.Drawing.Size(67, 13);
+            this.ST.TabIndex = 20;
+            this.ST.Text = "SoundTimer:";
             // 
             // stack
             // 
-            this.stack.AutoSize = true;
-            this.stack.Location = new System.Drawing.Point(7, 168);
-            this.stack.Name = "stack";
-            this.stack.Size = new System.Drawing.Size(41, 13);
-            this.stack.TabIndex = 19;
-            this.stack.Text = "Stack: ";
+            this.Stack.AutoSize = true;
+            this.Stack.Location = new System.Drawing.Point(7, 168);
+            this.Stack.Name = "stack";
+            this.Stack.Size = new System.Drawing.Size(41, 13);
+            this.Stack.TabIndex = 19;
+            this.Stack.Text = "Stack: ";
             // 
             // vf
             // 
@@ -307,51 +307,51 @@
             // 
             // ir
             // 
-            this.ir.AutoSize = true;
-            this.ir.Location = new System.Drawing.Point(129, 18);
-            this.ir.Name = "ir";
-            this.ir.Size = new System.Drawing.Size(24, 13);
-            this.ir.TabIndex = 2;
-            this.ir.Text = "IR: ";
+            this.IR.AutoSize = true;
+            this.IR.Location = new System.Drawing.Point(129, 18);
+            this.IR.Name = "ir";
+            this.IR.Size = new System.Drawing.Size(24, 13);
+            this.IR.TabIndex = 2;
+            this.IR.Text = "IR: ";
             // 
             // sp
             // 
-            this.sp.AutoSize = true;
-            this.sp.Location = new System.Drawing.Point(67, 18);
-            this.sp.Name = "sp";
-            this.sp.Size = new System.Drawing.Size(27, 13);
-            this.sp.TabIndex = 1;
-            this.sp.Text = "SP: ";
+            this.SP.AutoSize = true;
+            this.SP.Location = new System.Drawing.Point(67, 18);
+            this.SP.Name = "sp";
+            this.SP.Size = new System.Drawing.Size(27, 13);
+            this.SP.TabIndex = 1;
+            this.SP.Text = "SP: ";
             // 
             // pc
             // 
-            this.pc.AutoSize = true;
-            this.pc.Location = new System.Drawing.Point(7, 18);
-            this.pc.Name = "pc";
-            this.pc.Size = new System.Drawing.Size(27, 13);
-            this.pc.TabIndex = 0;
-            this.pc.Text = "PC: ";
+            this.PC.AutoSize = true;
+            this.PC.Location = new System.Drawing.Point(7, 18);
+            this.PC.Name = "pc";
+            this.PC.Size = new System.Drawing.Size(27, 13);
+            this.PC.TabIndex = 0;
+            this.PC.Text = "PC: ";
             // 
             // hb_mem
             // 
-            this.hb_mem.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.MemoryHex.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.hb_mem.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.hb_mem.Location = new System.Drawing.Point(0, 230);
-            this.hb_mem.Name = "hb_mem";
-            this.hb_mem.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))), ((int)(((byte)(188)))), ((int)(((byte)(255)))));
-            this.hb_mem.Size = new System.Drawing.Size(409, 107);
-            this.hb_mem.TabIndex = 20;
+            this.MemoryHex.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.MemoryHex.Location = new System.Drawing.Point(0, 230);
+            this.MemoryHex.Name = "hb_mem";
+            this.MemoryHex.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))), ((int)(((byte)(188)))), ((int)(((byte)(255)))));
+            this.MemoryHex.Size = new System.Drawing.Size(409, 107);
+            this.MemoryHex.TabIndex = 20;
             // 
             // disasm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(590, 337);
-            this.Controls.Add(this.hb_mem);
+            this.Controls.Add(this.MemoryHex);
             this.Controls.Add(this.gb_main);
-            this.Controls.Add(this.lv_instructions);
+            this.Controls.Add(this.InstructionList);
             this.Name = "disasm";
             this.Text = "chip-8 disassembler";
             this.gb_main.ResumeLayout(false);
@@ -363,11 +363,11 @@
         #endregion
         private System.Windows.Forms.ColumnHeader ch_hex;
         private System.Windows.Forms.ColumnHeader ch_opcode;
-        public System.Windows.Forms.ListView lv_instructions;
+        public System.Windows.Forms.ListView InstructionList;
         private System.Windows.Forms.GroupBox gb_main;
-        private System.Windows.Forms.Label pc;
-        private System.Windows.Forms.Label ir;
-        private System.Windows.Forms.Label sp;
+        private System.Windows.Forms.Label PC;
+        private System.Windows.Forms.Label IR;
+        private System.Windows.Forms.Label SP;
         private System.Windows.Forms.Label vb;
         private System.Windows.Forms.Label va;
         private System.Windows.Forms.Label v9;
@@ -384,11 +384,11 @@
         private System.Windows.Forms.Label vd;
         private System.Windows.Forms.Label vc;
         private System.Windows.Forms.Label vf;
-        private System.Windows.Forms.Label stack;
-        private System.Windows.Forms.Label dt;
-        private System.Windows.Forms.Label st;
-        private System.Windows.Forms.Label ops;
-        private System.Windows.Forms.Label lb_exec;
-        private Be.Windows.Forms.HexBox hb_mem;
+        private System.Windows.Forms.Label Stack;
+        private System.Windows.Forms.Label DT;
+        private System.Windows.Forms.Label ST;
+        private System.Windows.Forms.Label OperationsPerSec;
+        private System.Windows.Forms.Label State;
+        private Be.Windows.Forms.HexBox MemoryHex;
     }
 }

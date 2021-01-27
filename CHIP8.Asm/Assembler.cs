@@ -283,7 +283,7 @@ namespace CHIP8.Asm {
                             }
                         case LBL: {
                                 if (ResolvedLabels.ContainsKey(token.Value))
-                                    throw new Exception($"label '{token.Value}' already defined.");
+                                    throw new Exception($"Label '{token.Value}' already defined.");
                                 Expect(CHR, ":");
                                 ResolvedLabels.Add(token.Value, Address);
                                 TryResolvingLabels();
